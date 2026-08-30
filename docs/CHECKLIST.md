@@ -61,7 +61,10 @@ light + dark.
       `sidebar_state` cookie, but reading it back needs `cookies()` in the
       layout, which would make the whole dashboard dynamic and cost the static
       shell that offline navigation depends on. Not worth the trade.
-- [ ] Week / Month calendar views — rendered disabled, not built
+- [x] Week and Month calendar views, switched via `?view=` so the server picks
+      the query window; one bounded query per view
+- [x] Calendar date math covered by `lib/day.check.ts` (`bun lib/day.check.ts`),
+      passing from UTC+14 to UTC-11
 - [ ] Files / Templates / Notebook / Tags / Shared — no data model yet, so the
       nav items render disabled rather than as dead links
 

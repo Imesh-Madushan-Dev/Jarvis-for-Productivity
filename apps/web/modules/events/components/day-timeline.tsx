@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useLocalStorage } from "@/hooks/use-local-storage";
+import { formatTimeInZone, zonedHours } from "@/lib/day";
 import { cn } from "@/lib/utils";
 import type { EventListItem } from "../schema";
 
@@ -19,34 +19,32 @@ function hourLabel(hour: number) {
   return `${twelve} ${suffix}`;
 }
 
-function toHours(iso: string) {
-  const date = new Date(iso);
-  return date.getHours() + date.getMinutes() / 60;
-}
-
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-export function DayTimeline({ events }: { events: EventListItem[] }) {
-  const { value: view, setValue: setView } = useLocalStorage<"today">(
-    "moly.calendar.view",
-    "today",
-  );
-
+export function DayTimeline({
+  events,
+  timeZone,
+  nav,
+}: {
+  events: EventListItem[];
+  timeZone: string;
+  nav?: React.ReactNode;
+}) {
   // Mount-only: the server cannot know the reader's wall clock, and guessing
   // would desync hydration.
   const [nowHours, setNowHours] = useState<number | null>(null);
 
   useEffect(() => {
-    const tick = () => {
-      const now = new Date();
-      setNowHours(now.getHours() + now.getMinutes() / 60);
-    };
+    // Positioned against the profile's zone, not the browser's, so a traveller
+    // sees the same marker the rest of the dashboard is keyed to.
+    const tick = () =>
+      setNowHours(zonedHours(new Date().toISOString(), timeZone));
     tick();
     const id = setInterval(tick, 60_000);
     return () => clearInterval(id);
-  }, []);
+  }, [timeZone]);
 
   const marker =
     nowHours !== null && nowHours >= START_HOUR && nowHours <= END_HOUR
@@ -62,29 +60,11 @@ export function DayTimeline({ events }: { events: EventListItem[] }) {
         <h2 id="calendar-heading" className="text-base font-medium">
           Calendar
         </h2>
-        <div className="flex items-center gap-1">
-          <button
-            aria-current={view === "today"}
-            onClick={() => setView("today")}
-            className="t-press rounded-md px-2 py-1 text-sm text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-          >
-            Today
-          </button>
-          {["Week", "Month"].map((label) => (
-            <button
-              key={label}
-              disabled
-              title="Week and month views are not built yet"
-              className="cursor-not-allowed rounded-md px-2 py-1 text-sm text-muted-foreground/50"
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        {nav}
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        <div className="min-w-[52rem]">
+        <div className="min-w-208">
           <div
             className="grid text-xs text-muted-foreground"
             style={{ gridTemplateColumns: `repeat(${SPAN}, minmax(0, 1fr))` }}
@@ -125,12 +105,12 @@ export function DayTimeline({ events }: { events: EventListItem[] }) {
             ) : (
               events.map((event) => {
                 const start = clamp(
-                  toHours(event.starts_at),
+                  zonedHours(event.starts_at, timeZone),
                   START_HOUR,
                   END_HOUR,
                 );
                 const end = clamp(
-                  toHours(event.ends_at),
+                  zonedHours(event.ends_at, timeZone),
                   start + 0.25,
                   END_HOUR,
                 );
@@ -150,10 +130,7 @@ export function DayTimeline({ events }: { events: EventListItem[] }) {
                       {event.title}
                     </p>
                     <p className="mt-0.5 truncate text-[0.7rem] text-muted-foreground">
-                      {new Date(event.starts_at).toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
+                      {formatTimeInZone(event.starts_at, timeZone)}
                     </p>
                   </article>
                 );

@@ -5,7 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
 import { todayInZone, zonedDayRange } from "@/lib/day";
 import { DayTimeline } from "@/modules/events/components/day-timeline";
-import { listEventsForDay } from "@/modules/events/queries";
+import { CalendarNav } from "@/modules/events/components/calendar-nav";
+import { listEventsForRange } from "@/modules/events/queries";
 import { NotesRail } from "@/modules/notes/components/notes-rail";
 import { ScratchPad } from "@/modules/notes/components/scratch-pad";
 import { getScratchPad, listRecentNotes } from "@/modules/notes/queries";
@@ -41,7 +42,13 @@ async function CalendarPanel() {
   const day = todayInZone(profile.timezone);
   const { start, end } = zonedDayRange(day, profile.timezone);
 
-  return <DayTimeline events={await listEventsForDay(user.id, start, end)} />;
+  return (
+    <DayTimeline
+      events={await listEventsForRange(user.id, start, end)}
+      timeZone={profile.timezone}
+      nav={<CalendarNav active="day" />}
+    />
+  );
 }
 
 async function TasksPanel() {
