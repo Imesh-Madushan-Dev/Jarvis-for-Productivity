@@ -6,8 +6,9 @@ import { buildAwareness } from "@/lib/ai/context";
 import { defaultModelId } from "@/lib/ai/models";
 import { createClient } from "@/lib/supabase/server";
 
-// Tool loops and provider round trips outlive the edge budget.
-export const runtime = "nodejs";
+// No `runtime` export: Cache Components rejects the route segment config, and
+// Node is the default for route handlers anyway. Tool loops plus provider
+// round trips need the longer budget.
 export const maxDuration = 60;
 
 const bodySchema = z.object({

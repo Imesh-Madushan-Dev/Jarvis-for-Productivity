@@ -3,7 +3,7 @@ import { ToolLoopAgent, stepCountIs } from "ai";
 import { eventTools } from "@/modules/events/tools";
 import { noteTools } from "@/modules/notes/tools";
 import { taskTools } from "@/modules/tasks/tools";
-import { resolveModel } from "./models";
+import { modelProviderOptions, resolveModel } from "./models";
 
 const SYSTEM = `You are Moly, a personal planning assistant embedded in the user's own dashboard.
 
@@ -28,6 +28,8 @@ export function createMolyAgent({
 }) {
   return new ToolLoopAgent({
     model: resolveModel(modelId),
+    // Thinking budget / thought visibility, per model. See lib/ai/models.ts.
+    providerOptions: modelProviderOptions(modelId),
     instructions: `${SYSTEM}\n\n<context>\n${awareness}\n</context>`,
     tools: {
       ...taskTools(userId),

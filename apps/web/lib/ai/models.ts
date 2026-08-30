@@ -3,20 +3,51 @@ import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
 import type { LanguageModel } from "ai";
 
+export type ModelTier = "fast" | "standard" | "thinking";
+
+/** Provider options cross the wire as JSON, so `unknown` won't do. */
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+type ModelDef = {
+  id: string;
+  label: string;
+  provider: "anthropic" | "google" | "openai";
+  envKey: string;
+  tier: ModelTier;
+  /** Passed straight to the provider. `includeThoughts` / `display` are what
+   *  make reasoning stream back, which the assistant panel shows under
+   *  "Thought process". */
+  providerOptions?: Record<string, Record<string, JsonValue>>;
+};
+
 /**
- * The only place model ids appear. Provider ids move faster than any codebase,
- * so if one 404s, fix it here and nowhere else.
+ * The only place model ids appear. Provider ids move fast, so if one 404s, fix
+ * it here and nowhere else.
  *
- * A model is offered in the UI only when its provider key is present in the
- * environment — no point listing something that cannot run.
+ * Gemini ids verified against ai.google.dev/gemini-api/docs/models.
+ * The OpenAI id is NOT verified — confirm before relying on it.
+ *
+ * A model is offered in the UI only when its provider key is in the
+ * environment; no point listing something that cannot run.
  */
-export const MODELS = [
+export const MODELS: ModelDef[] = [
   {
     id: "claude-opus-5",
     label: "Opus 5",
     provider: "anthropic",
     envKey: "ANTHROPIC_API_KEY",
     tier: "thinking",
+    providerOptions: {
+      // 'adaptive' lets the model decide how long to think; summarised so the
+      // panel has something readable to show.
+      anthropic: { thinking: { type: "adaptive", display: "summarized" } },
+    },
   },
   {
     id: "claude-sonnet-5",
@@ -33,18 +64,39 @@ export const MODELS = [
     tier: "fast",
   },
   {
-    id: "gemini-2.5-pro",
-    label: "Gemini 2.5 Pro",
+    id: "gemini-3.1-pro-preview",
+    label: "Gemini 3.1 Pro",
     provider: "google",
     envKey: "GOOGLE_GENERATIVE_AI_API_KEY",
     tier: "thinking",
+    providerOptions: {
+      google: {
+        thinkingConfig: { thinkingLevel: "high", includeThoughts: true },
+      },
+    },
   },
   {
-    id: "gemini-2.5-flash",
-    label: "Gemini 2.5 Flash",
+    id: "gemini-3.7-flash",
+    label: "Gemini 3.7 Flash",
+    provider: "google",
+    envKey: "GOOGLE_GENERATIVE_AI_API_KEY",
+    tier: "standard",
+    providerOptions: {
+      google: {
+        thinkingConfig: { thinkingLevel: "low", includeThoughts: true },
+      },
+    },
+  },
+  {
+    id: "gemini-3.5-flash-lite",
+    label: "Gemini 3.5 Flash Lite",
     provider: "google",
     envKey: "GOOGLE_GENERATIVE_AI_API_KEY",
     tier: "fast",
+    providerOptions: {
+      // Cheapest tier still reasons a little; thoughts stay off to keep it snappy.
+      google: { thinkingConfig: { thinkingLevel: "minimal" } },
+    },
   },
   {
     id: "gpt-5",
@@ -53,10 +105,8 @@ export const MODELS = [
     envKey: "OPENAI_API_KEY",
     tier: "standard",
   },
-] as const;
+];
 
-export type ModelId = (typeof MODELS)[number]["id"];
-export type ModelTier = (typeof MODELS)[number]["tier"];
 export type ModelInfo = {
   id: string;
   label: string;
@@ -74,13 +124,16 @@ export function availableModels(): ModelInfo[] {
   }));
 }
 
-export function resolveModel(id: string): LanguageModel {
+function find(id: string): ModelDef {
   const model = MODELS.find((candidate) => candidate.id === id);
   if (!model) throw new Error(`Unknown model: ${id}`);
+  return model;
+}
+
+export function resolveModel(id: string): LanguageModel {
+  const model = find(id);
   if (!process.env[model.envKey]) {
-    throw new Error(
-      `${model.label} needs ${model.envKey} in the environment.`,
-    );
+    throw new Error(`${model.label} needs ${model.envKey} in the environment.`);
   }
 
   switch (model.provider) {
@@ -91,6 +144,10 @@ export function resolveModel(id: string): LanguageModel {
     case "openai":
       return openai(model.id);
   }
+}
+
+export function modelProviderOptions(id: string) {
+  return find(id).providerOptions;
 }
 
 export function defaultModelId(): string | null {
