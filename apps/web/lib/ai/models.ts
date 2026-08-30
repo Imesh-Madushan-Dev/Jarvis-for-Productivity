@@ -124,14 +124,28 @@ export function availableModels(): ModelInfo[] {
   }));
 }
 
-function find(id: string): ModelDef {
-  const model = MODELS.find((candidate) => candidate.id === id);
-  if (!model) throw new Error(`Unknown model: ${id}`);
-  return model;
+function find(id: string): ModelDef | undefined {
+  return MODELS.find((candidate) => candidate.id === id);
+}
+
+/**
+ * The client's model id comes from localStorage, so it can name a model that
+ * was since renamed or whose key was revoked. Fall back rather than 500.
+ */
+export function resolveModelIdOrDefault(id: string | undefined): string | null {
+  const model = id ? find(id) : undefined;
+  if (model && process.env[model.envKey]) return model.id;
+  return defaultModelId();
+}
+
+export function isModelUsable(id: string): boolean {
+  const model = find(id);
+  return Boolean(model && process.env[model.envKey]);
 }
 
 export function resolveModel(id: string): LanguageModel {
   const model = find(id);
+  if (!model) throw new Error(`Unknown model: ${id}`);
   if (!process.env[model.envKey]) {
     throw new Error(`${model.label} needs ${model.envKey} in the environment.`);
   }
@@ -147,7 +161,7 @@ export function resolveModel(id: string): LanguageModel {
 }
 
 export function modelProviderOptions(id: string) {
-  return find(id).providerOptions;
+  return find(id)?.providerOptions;
 }
 
 export function defaultModelId(): string | null {

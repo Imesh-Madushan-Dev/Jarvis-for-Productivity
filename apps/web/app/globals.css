@@ -288,25 +288,70 @@
   }
 }
 
-/* Assistant panel reveal — the panel-reveal transition, adapted for mount. */
-@keyframes t-panel-in {
-  from {
-    opacity: 0;
-    transform: translateY(var(--distance-medium));
-    filter: blur(var(--blur-small));
-  }
-  to {
-    opacity: 1;
-    transform: none;
-    filter: blur(0);
-  }
+/* The assistant card grows instead of mounting: one surface, two rows, the
+   top one tweened between 0fr and 1fr. Padding must live on the inner child —
+   padding on a 0fr track leaves a strip so the card never fully closes. */
+.t-extend {
+  display: grid;
+  transition: grid-template-rows var(--duration-fast) var(--ease-smooth-out);
 }
-.t-panel-in {
-  animation: t-panel-in var(--duration-slow) var(--ease-smooth-out) both;
+
+/* ── Shimmer text (transitions.dev, verbatim) ─────────────────
+   The "thinking" label. The snippet ships a near-black highlight, which is
+   invisible on dark, so base/highlight are themed rather than hardcoded. */
+:root {
+  --shimmer-dur: 2000ms;
+  --shimmer-band: 400%;
+  --shimmer-ease: linear;
+  --shimmer-base: oklch(0.556 0 0);
+  --shimmer-highlight: oklch(0.145 0 0);
+}
+
+.dark {
+  --shimmer-base: oklch(0.5 0 0);
+  --shimmer-highlight: oklch(0.985 0 0);
+}
+
+.t-shimmer {
+  position: relative;
+  display: inline-block;
+  color: var(--shimmer-base);
+}
+.t-shimmer::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    var(--shimmer-highlight) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: var(--shimmer-band) 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: t-shimmer var(--shimmer-dur) var(--shimmer-ease) infinite;
+}
+@keyframes t-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0% 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .t-panel-in {
+  .t-extend {
+    transition: none !important;
+  }
+  .t-shimmer::before {
     animation: none !important;
   }
 }

@@ -39,8 +39,8 @@ light + dark.
 - [x] `modules/profile`
 - [x] Shared `lib/result.ts` — every action returns `ActionResult`, never a raw
       Postgres error
-- [ ] `tools.ts` per module wrapping `actions.ts` — **not written**. Unused code
-      until the chat panel exists; actions are already shaped for it.
+- [x] `tools.ts` per module wrapping `actions.ts`, reusing the same zod schemas
+      the forms validate against
 
 ## 4. Dashboard UI (reference parity)
 - [x] App sidebar: user block, quick search, 2 nav groups, footer
@@ -95,9 +95,8 @@ light + dark.
 - [x] Tooltips on every icon button; `TooltipProvider` with a 300ms delay
 - [x] Assistant turns collapse behind "Worked for Ns" (live counter while
       running), opening onto Thought process + tool lines
-- [x] Panel: new chat, expand/shrink height, close; mount reveal on the
-      motion tokens
-- [x] Streaming replies with a native `<details>` "Thought process" for
+- [x] Panel: new chat, expand/shrink height, close
+- [x] Streaming replies with a controlled `Collapsible` "Thought process" for
       reasoning parts, and per-tool-call progress lines
 - [x] **Awareness**: every request carries the current pathname; the server
       builds context from the profile, today's tasks, today's events and recent
@@ -115,6 +114,20 @@ light + dark.
       without it is the wrong order. The agent is told to say so if asked.
 - [ ] Conversation is session-only — no `threads`/`messages` tables yet, so it
       resets on reload. The history icon in the reference UI is not built.
+- [x] **One card**: panel and composer are a single surface that grows via
+      `grid-template-rows: 0fr -> 1fr`; the rainbow ring wraps the whole thing
+- [x] Pending state: shimmering "Thinking..." fills the gap between send and
+      first token, announced with `aria-live`
+- [x] Thought process auto-opens while the model works, collapses to
+      "Worked for Ns" on finish; a manual toggle outranks both
+- [x] Typing mid-run queues a follow-up, sent when the run settles
+- [x] Close collapses the card; focusing the composer re-extends it
+- [x] **Error handling**: coded JSON errors from the route, mapped to human
+      copy in `lib/ai/errors.ts`, rendered as a bordered row with Retry wired
+      to `regenerate()`. Errors force the card open. Offline detected via
+      `useOffline()`. Raw `error.message` is never rendered.
+- [x] Stale/unkeyed model id falls back to the default instead of 500ing
+- [x] Tool failures show the tool's own error string, not just "failed"
 - [ ] No voice input or attachments
 
 ## 8. Quality gates
