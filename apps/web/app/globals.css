@@ -287,3 +287,97 @@
     animation: none !important;
   }
 }
+
+/* Assistant panel reveal — the panel-reveal transition, adapted for mount. */
+@keyframes t-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--distance-medium));
+    filter: blur(var(--blur-small));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+.t-panel-in {
+  animation: t-panel-in var(--duration-slow) var(--ease-smooth-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-panel-in {
+    animation: none !important;
+  }
+}
+
+/* Base UI drives the panel height inline; this just gives it a tokenised
+   easing. Harmless if the primitive ever stops setting a height. */
+[data-slot="collapsible-content"] {
+  overflow: hidden;
+  transition: height var(--duration-fast) var(--ease-smooth-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="collapsible-content"] {
+    transition: none !important;
+  }
+}
+
+/* -------------------------------------------------- Animated rainbow edge */
+/* Registering the angle is what makes it interpolable — an unregistered
+   custom property would jump rather than sweep. */
+@property --edge-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.rainbow-edge {
+  position: relative;
+}
+
+/* A conic gradient masked to a ring, rather than pushed behind with
+   `z-index: -1`. A negative z-index would escape to the nearest stacking
+   context and get painted over by the opaque card background. Masking keeps
+   the layers local. */
+.rainbow-edge::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  padding: 2px;
+  pointer-events: none;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--edge-angle),
+    #ff2d55,
+    #ff9500,
+    #ffd60a,
+    #34c759,
+    #00c7fd,
+    #5e5ce6,
+    #ff2d55
+  );
+  /* Punch out the middle: paint only the padding band. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: edge-spin 5s linear infinite;
+}
+
+@keyframes edge-spin {
+  to {
+    --edge-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rainbow-edge::before {
+    animation: none;
+  }
+}

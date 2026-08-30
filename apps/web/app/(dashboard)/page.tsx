@@ -75,7 +75,7 @@ function PanelSkeleton({ className }: { className: string }) {
 
 export default function OverviewPage() {
   return (
-    <div className="flex flex-col gap-5 px-4 pt-4 pb-safe-b sm:px-6 sm:pt-6">
+    <div className="flex flex-col gap-5 pt-4 pb-safe-b sm:pt-6">
       <Suspense fallback={<PanelSkeleton className="h-20" />}>
         <HeaderPanel />
       </Suspense>

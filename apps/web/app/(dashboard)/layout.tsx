@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 
+import { AssistantSlot } from "@/components/assistant/assistant-slot";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
@@ -56,13 +56,18 @@ export default function DashboardLayout({
       </Suspense>
 
       <SidebarInset className="min-w-0">
-        {/* Visible at every width: on desktop it is the collapse control, on
-            mobile it opens the sheet. ⌘B and the rail do the same job. */}
-        <div className="flex h-12 shrink-0 items-center gap-2 px-4 pt-safe-t">
-          <SidebarTrigger className="t-press" />
+     
+       
+        {/* The single place page gutters are set — pages bring no px of their
+            own. pb-40 leaves room for the fixed assistant bar. The cap is
+            generous rather than narrow: it only kicks in past ~1600px, so wide
+            screens get breathing room instead of a dead zone. */}
+        <div className="mx-auto w-full max-w-400 px-5 pb-40 sm:px-8">
+          {children}
         </div>
-        {children}
       </SidebarInset>
+
+      <AssistantSlot />
     </SidebarProvider>
   );
 }

@@ -86,7 +86,38 @@ light + dark.
 - [x] localStorage: scratch-pad crash recovery, notes tab, calendar view
 - [x] PWA: manifest, icons, standalone, safe areas, offline retry
 
-## 7. Quality gates
+## 7. Ambient assistant
+- [x] Floating bar, fixed bottom-centre, collapses to a pill
+- [x] Chip row + input row matching the reference: history, action chips, a
+      right-aligned create chip, model picker, attach, mic/send/stop
+- [x] Model picker is a `DropdownMenu` radio group — tiers, checkmarks, and a
+      "No key" badge on models whose provider key is missing
+- [x] Tooltips on every icon button; `TooltipProvider` with a 300ms delay
+- [x] Assistant turns collapse behind "Worked for Ns" (live counter while
+      running), opening onto Thought process + tool lines
+- [x] Panel: new chat, expand/shrink height, close; mount reveal on the
+      motion tokens
+- [x] Streaming replies with a native `<details>` "Thought process" for
+      reasoning parts, and per-tool-call progress lines
+- [x] **Awareness**: every request carries the current pathname; the server
+      builds context from the profile, today's tasks, today's events and recent
+      notes (`lib/ai/context.ts`)
+- [x] **Mutation**: `modules/*/tools.ts` wrap the same actions and the same zod
+      schemas the forms use — createTask, setTaskStatus, listTasks, createNote,
+      replaceScratchPad, createEvent
+- [x] `ToolLoopAgent` with `stepCountIs(8)` as a runaway guard
+- [x] Model list derived from which provider keys exist; unavailable models
+      render disabled rather than failing at send time
+- [x] Panel refreshes the RSC tree when a run finishes, so the dashboard
+      reflects what the agent changed
+- [ ] **No delete tool.** Destructive operations need the approval flow
+      (`needsApproval` + `addToolApprovalResponse`), and shipping deletion
+      without it is the wrong order. The agent is told to say so if asked.
+- [ ] Conversation is session-only — no `threads`/`messages` tables yet, so it
+      resets on reload. The history icon in the reference UI is not built.
+- [ ] No voice input or attachments
+
+## 8. Quality gates
 - [x] Optimistic toggle with automatic revert on failure
 - [x] No secrets in source
 - [x] `tsc --noEmit` clean
