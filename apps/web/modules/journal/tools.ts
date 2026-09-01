@@ -2,12 +2,13 @@ import { tool } from "ai";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
-import { createJournalEntry, searchJournal } from "./actions";
+import { recall } from "@/lib/ai/recall";
+import { createJournalEntry } from "./actions";
 import {
   createJournalEntrySchema,
   entryPreview,
   JOURNAL_COLUMNS,
-  searchJournalSchema,
+  recallSchema,
 } from "./schema";
 
 /**
@@ -17,18 +18,19 @@ import {
  */
 export function journalTools(userId: string) {
   return {
-    searchJournal: tool({
+    recall: tool({
       description:
-        "Search the user's journal by meaning and by wording at once. Use this whenever they refer to something from their own life — a person, a plan, a feeling, 'that thing I mentioned' — before saying you don't know. Optionally bound it with from/to (YYYY-MM-DD).",
-      inputSchema: searchJournalSchema,
+        "Search everything the user has written — journal entries, notes, tasks and events — by meaning and by wording at once, newest first among equals. Use this whenever they refer to something from their own life ('that thing I mentioned', a person, a plan, a feeling) before saying you don't know. Narrow with sources or a from/to date range only when the question genuinely calls for it.",
+      inputSchema: recallSchema,
       execute: async (input) => {
-        const hits = await searchJournal(input);
+        const hits = await recall(input);
+        // Snippets arrive pre-trimmed from Postgres; nothing is re-cut here.
         return {
           matches: hits.map((hit) => ({
-            id: hit.id,
-            day: hit.day,
             source: hit.source,
-            text: entryPreview(hit, 600),
+            day: hit.day,
+            title: hit.title || undefined,
+            text: hit.snippet,
           })),
         };
       },
@@ -36,7 +38,7 @@ export function journalTools(userId: string) {
 
     readJournal: tool({
       description:
-        "Read journal entries for a date range in order — for 'what did I do last week' or summarising a month. Prefer searchJournal when looking for a topic rather than a period.",
+        "Read journal entries for a date range in order — for 'what did I do last week' or summarising a month. Prefer recall when looking for a topic rather than a period.",
       inputSchema: z.object({
         from: z.iso.date(),
         to: z.iso.date(),

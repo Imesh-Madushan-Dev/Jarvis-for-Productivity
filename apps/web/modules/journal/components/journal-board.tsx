@@ -19,7 +19,8 @@ import {
   deleteJournalEntry,
   searchJournal,
 } from "../actions";
-import { entryText, type JournalEntry, type JournalHit } from "../schema";
+import type { RecallHit } from "@/lib/ai/recall";
+import { entryText, type JournalEntry } from "../schema";
 import { VoiceRecorder, type VoiceResult } from "./voice-recorder";
 
 type Patch =
@@ -62,7 +63,7 @@ export function JournalBoard({
   const [voice, setVoice] = useState<VoiceResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [hits, setHits] = useState<JournalHit[] | null>(null);
+  const [hits, setHits] = useState<RecallHit[] | null>(null);
   const [searching, startSearch] = useTransition();
   const [, startWrite] = useTransition();
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -200,7 +201,7 @@ export function JournalBoard({
               setQuery(event.target.value);
               if (!event.target.value.trim()) setHits(null);
             }}
-            placeholder="Search everything you've written…"
+            placeholder="Search your journal…"
             aria-label="Search the journal"
             className="pl-9"
           />
@@ -236,10 +237,10 @@ export function JournalBoard({
               className="t-lift rounded-xl border border-border bg-card p-4"
             >
               <p className="text-xs text-muted-foreground">
-                {dayLabel(hit.day, today)}
+                {hit.day ? dayLabel(hit.day, today) : "Undated"}
               </p>
               <p className="mt-1.5 text-sm whitespace-pre-wrap">
-                {entryText(hit)}
+                {hit.snippet}
               </p>
             </article>
           ))}

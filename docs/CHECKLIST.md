@@ -132,8 +132,15 @@ light + dark.
 - [x] Voice: MediaRecorder -> `/api/journal/voice` -> private `journal-audio`
       bucket (owner-only storage policies, path prefixed with the user id) ->
       transcription; a failed transcription still keeps the audio
-- [x] Agent tools `searchJournal` / `readJournal` / `addJournalEntry`; the last
-      3 entries are hinted in context, the rest retrieved on demand
+- [x] **One `recall` tool, four sources.** `recall()` UNIONs journal, notes,
+      tasks and events straight from their own GIN-indexed tables - no mirror
+      table, no triggers, nothing that can go stale - and fuses words, meaning
+      and recency with RRF. Snippets are trimmed to 300 chars in Postgres, so
+      nothing is fetched that would only be thrown away
+- [x] Notes are embedded too (journal + notes have vectors; tasks and events
+      compete on words, which is how people search a title anyway)
+- [x] Context is today-only: ids without bodies, sums without rows, and the
+      journal reduced to "last written <day>". Everything else is one recall
 - [x] `bun modules/journal/journal.check.ts`
 - [ ] Rolling weekly summaries and a distilled `memory_facts` store - the layer
       that turns retrieval into memory. Not built yet.

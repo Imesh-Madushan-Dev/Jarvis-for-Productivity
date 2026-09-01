@@ -297,6 +297,8 @@ export type Database = {
         Row: {
           body: string
           created_at: string
+          embedding: string | null
+          embedding_model: string | null
           id: string
           kind: Database["public"]["Enums"]["note_kind"]
           project_id: string | null
@@ -307,6 +309,8 @@ export type Database = {
         Insert: {
           body?: string
           created_at?: string
+          embedding?: string | null
+          embedding_model?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["note_kind"]
           project_id?: string | null
@@ -317,6 +321,8 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string
+          embedding?: string | null
+          embedding_model?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["note_kind"]
           project_id?: string | null
@@ -470,7 +476,7 @@ export type Database = {
       }
     }
     Functions: {
-      search_journal: {
+      recall: {
         Args: {
           p_query: string
           p_embedding?: string | null
@@ -478,14 +484,14 @@ export type Database = {
           p_limit?: number
           p_from?: string | null
           p_to?: string | null
+          p_sources?: string[] | null
         }
         Returns: {
+          source: string
           id: string
-          day: string
-          source: Database["public"]["Enums"]["journal_source"]
-          body: string
-          transcript: string
-          created_at: string
+          day: string | null
+          title: string
+          snippet: string
           score: number
         }[]
       }

@@ -2,6 +2,7 @@
 
 import { requireUser } from "@/lib/auth";
 import { embedText } from "@/lib/ai/embeddings";
+import { recall, type RecallHit } from "@/lib/ai/recall";
 import { invalidate } from "@/lib/cache";
 import { fail, ok, toUserMessage, type ActionResult } from "@/lib/result";
 import { createClient } from "@/lib/supabase/server";
@@ -11,7 +12,6 @@ import {
   entryText,
   updateJournalEntrySchema,
   type CreateJournalEntryInput,
-  type JournalHit,
 } from "./schema";
 
 /**
@@ -140,38 +140,16 @@ export async function deleteJournalEntry(input: {
 }
 
 /**
- * Hybrid search: full text and vector, fused in Postgres (see the
- * `search_journal` function). The query is embedded here; when there is no
- * embedding provider it degrades to plain full-text rather than failing.
+ * The journal page's own search: the shared recall, scoped to one source.
+ * There is exactly one retrieval implementation in this app.
  */
 export async function searchJournal(input: {
   query: string;
   from?: string | null;
   to?: string | null;
   limit?: number;
-}): Promise<JournalHit[]> {
-  const query = input.query?.trim();
-  if (!query) return [];
-
-  await requireUser();
-  const supabase = await createClient();
-  const embedding = await embedText(query);
-
-  const { data, error } = await supabase.rpc("search_journal", {
-    p_query: query,
-    p_embedding: embedding?.vector ?? null,
-    p_model: embedding?.model ?? null,
-    p_limit: input.limit ?? 8,
-    p_from: input.from ?? null,
-    p_to: input.to ?? null,
-  });
-
-  if (error) {
-    console.error("[journal] search failed", error);
-    return [];
-  }
-
-  return (data ?? []) as JournalHit[];
+}): Promise<RecallHit[]> {
+  return recall({ ...input, sources: ["journal"] });
 }
 
 /**

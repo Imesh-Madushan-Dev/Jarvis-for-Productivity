@@ -19,16 +19,6 @@ export type JournalEntry = {
   created_at: string;
 };
 
-export type JournalHit = {
-  id: string;
-  day: string;
-  source: JournalSource;
-  body: string;
-  transcript: string;
-  created_at: string;
-  score: number;
-};
-
 export const createJournalEntrySchema = z.object({
   day: z.iso.date(),
   body: z.string().trim().max(20_000).default(""),
@@ -46,11 +36,15 @@ export const updateJournalEntrySchema = z.object({
 
 export const deleteJournalEntrySchema = z.object({ id: z.uuid() });
 
-export const searchJournalSchema = z.object({
+export const recallSchema = z.object({
   query: z.string().trim().min(1).max(300),
   from: z.iso.date().nullish(),
   to: z.iso.date().nullish(),
-  limit: z.number().int().min(1).max(25).default(8),
+  sources: z
+    .array(z.enum(["journal", "note", "task", "event"]))
+    .nullish()
+    .describe("Leave empty to search everything, which is usually right."),
+  limit: z.number().int().min(1).max(20).default(6),
 });
 
 /** What a reader (or a model) should see for an entry, whatever its source. */
