@@ -6,9 +6,9 @@
  */
 import assert from "node:assert/strict";
 
-import { summarize } from "./queries";
 import {
   createTransactionSchema,
+  summarize,
   setWalletBalanceSchema,
   formatMoney,
   monthBounds,

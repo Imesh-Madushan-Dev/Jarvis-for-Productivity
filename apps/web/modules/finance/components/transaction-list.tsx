@@ -1,51 +1,38 @@
 "use client";
 
-import { useOptimistic, useState, useTransition } from "react";
+import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon, PencilEdit02Icon } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/lib/utils";
-import { deleteTransaction } from "../actions";
 import {
   categoryColor,
   formatMoney,
   type Category,
+  type CreateTransactionInput,
   type TransactionListItem,
 } from "../schema";
 import { EditTransactionDialog } from "./transaction-dialog";
 
+/** Rows and writes both come from the board, which owns the optimistic list. */
 export function TransactionList({
-  transactions,
+  transactions: rows,
   categories,
   currency,
   today,
+  onEdit,
+  onDelete,
 }: {
   transactions: TransactionListItem[];
   categories: Category[];
   currency: string;
   today: string;
+  onEdit: (id: string, values: CreateTransactionInput) => Promise<string | null>;
+  onDelete: (id: string) => void;
 }) {
-  const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<TransactionListItem | null>(null);
-  const [, startTransition] = useTransition();
 
   const byId = new Map(categories.map((category) => [category.id, category]));
-
-  const [rows, removeRow] = useOptimistic(
-    transactions,
-    (current: TransactionListItem[], id: string) =>
-      current.filter((row) => row.id !== id),
-  );
-
-  function remove(id: string) {
-    startTransition(async () => {
-      removeRow(id);
-      const result = await deleteTransaction({ id });
-      // React drops the optimistic edit when the transition settles, so a
-      // failed delete puts the row back on its own.
-      setError(result.ok ? null : result.error);
-    });
-  }
 
   if (rows.length === 0) {
     return (
@@ -114,7 +101,7 @@ export function TransactionList({
                 </button>
                 <button
                   type="button"
-                  onClick={() => remove(row.id)}
+                  onClick={() => onDelete(row.id)}
                   aria-label={`Delete ${row.note || "entry"}`}
                   className="t-press rounded-md p-1 text-muted-foreground hover:text-destructive"
                 >
@@ -126,16 +113,11 @@ export function TransactionList({
         })}
       </ul>
 
-      {error ? (
-        <p role="alert" className="pt-2 text-xs text-destructive">
-          {error}
-        </p>
-      ) : null}
-
       <EditTransactionDialog
         entry={editing}
         categories={categories}
         today={today}
+        onSubmit={onEdit}
         onClose={() => setEditing(null)}
       />
     </div>

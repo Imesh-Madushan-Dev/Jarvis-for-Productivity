@@ -92,18 +92,11 @@ export async function setWalletBalance(
   const user = await requireUser();
   const supabase = await createClient();
 
-  const { data: net } = await supabase
-    .from("wallet_net")
-    .select("net_cents")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      opening_balance_cents: parsed.data.balance - (net?.net_cents ?? 0),
-    })
-    .eq("id", user.id);
+  // One statement: reading the net and writing the opening balance in two
+  // round trips is a round trip more than this is worth.
+  const { error } = await supabase.rpc("set_wallet_balance", {
+    target_cents: parsed.data.balance,
+  });
 
   if (error) return fail(toUserMessage(error));
 

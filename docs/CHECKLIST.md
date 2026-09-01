@@ -165,7 +165,12 @@ light + dark.
 - [ ] No voice input or attachments
 
 ## 8. Quality gates
-- [x] Optimistic toggle with automatic revert on failure
+- [x] Optimistic writes everywhere, with automatic revert on failure: task
+      toggle **and** inline add, money add/edit/delete (rows, totals, chart and
+      balance all move at once), category add/archive, wallet balance
+- [x] `requireUser` verifies the JWT with `getClaims()` instead of a network
+      `getUser()` on every render
+- [x] `set_wallet_balance` RPC — one statement instead of read-then-write
 - [x] No secrets in source
 - [x] `tsc --noEmit` clean
 - [ ] `bun run build` - **not run this round at your request**

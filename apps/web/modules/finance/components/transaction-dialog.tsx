@@ -23,25 +23,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { createTransaction, updateTransaction } from "../actions";
-import type { Category, MoneyKind, TransactionListItem } from "../schema";
+import type {
+  Category,
+  CreateTransactionInput,
+  MoneyKind,
+  TransactionListItem,
+} from "../schema";
 
 const UNCATEGORISED = "none";
 
 /**
- * One form, two verbs. Creating and editing differ only in which action runs
- * and what the fields start as, so they share a component rather than drifting
- * apart in two.
+ * One form, two verbs. Creating and editing differ only in what the fields
+ * start as and which handler runs, so they share a component.
+ *
+ * The write itself belongs to the board, not to this dialog: the board holds
+ * the optimistic list, so it has to be the thing that fires the action. The
+ * dialog closes as soon as the handler is called, not when the server answers.
  */
 function TransactionForm({
   categories,
   today,
   entry,
+  onSubmit,
   onDone,
 }: {
   categories: Category[];
   today: string;
   entry?: TransactionListItem;
+  onSubmit: (values: CreateTransactionInput) => Promise<string | null>;
   onDone: () => void;
 }) {
   const [kind, setKind] = useState<MoneyKind>(entry?.kind ?? "expense");
@@ -49,7 +58,6 @@ function TransactionForm({
     entry?.category_id ?? UNCATEGORISED,
   );
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
 
   // Picking a category of the wrong kind is the one mistake this form can make,
   // so the list simply never offers one.
@@ -63,24 +71,24 @@ function TransactionForm({
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    setError(null);
 
-    const values = {
+    const amount = String(form.get("amount") ?? "").trim();
+    // The one check worth doing here: an optimistic row for an unparseable
+    // amount would appear and then vanish, which reads as a bug.
+    if (!Number.isFinite(Number(amount.replace(/[, ]/g, ""))) || Number(amount) <= 0) {
+      setError("Enter an amount greater than zero.");
+      return;
+    }
+
+    void onSubmit({
       kind,
-      amount: String(form.get("amount") ?? ""),
+      amount,
       occurredOn: String(form.get("occurredOn") ?? today),
       categoryId: categoryId === UNCATEGORISED ? null : categoryId,
       note: String(form.get("note") ?? ""),
-    };
-
-    startTransition(async () => {
-      const result = entry
-        ? await updateTransaction({ id: entry.id, ...values })
-        : await createTransaction(values);
-
-      if (result.ok) onDone();
-      else setError(result.error);
     });
+
+    onDone();
   }
 
   return (
@@ -170,8 +178,8 @@ function TransactionForm({
       </div>
 
       <DialogFooter>
-        <Button type="submit" disabled={pending} className="t-press">
-          {pending ? "Saving…" : entry ? "Save" : "Add"}
+        <Button type="submit" className="t-press">
+          {entry ? "Save" : "Add"}
         </Button>
       </DialogFooter>
     </form>
@@ -181,9 +189,11 @@ function TransactionForm({
 export function AddTransactionDialog({
   categories,
   today,
+  onSubmit,
 }: {
   categories: Category[];
   today: string;
+  onSubmit: (values: CreateTransactionInput) => Promise<string | null>;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -203,6 +213,7 @@ export function AddTransactionDialog({
           <TransactionForm
             categories={categories}
             today={today}
+            onSubmit={onSubmit}
             onDone={() => setOpen(false)}
           />
         ) : null}
@@ -215,11 +226,13 @@ export function EditTransactionDialog({
   entry,
   categories,
   today,
+  onSubmit,
   onClose,
 }: {
   entry: TransactionListItem | null;
   categories: Category[];
   today: string;
+  onSubmit: (id: string, values: CreateTransactionInput) => Promise<string | null>;
   onClose: () => void;
 }) {
   return (
@@ -231,6 +244,7 @@ export function EditTransactionDialog({
             entry={entry}
             categories={categories}
             today={today}
+            onSubmit={(values) => onSubmit(entry.id, values)}
             onDone={onClose}
           />
         ) : null}

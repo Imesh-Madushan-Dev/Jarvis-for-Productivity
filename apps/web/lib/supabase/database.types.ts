@@ -380,7 +380,10 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      set_wallet_balance: {
+        Args: { target_cents: number }
+        Returns: undefined
+      }
     }
     Enums: {
       money_kind: "income" | "expense"

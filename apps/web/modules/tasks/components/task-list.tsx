@@ -20,17 +20,24 @@ export function TaskList({
 
   const [optimisticTasks, patchTask] = useOptimistic(
     tasks,
-    (current: TaskListItem[], next: { id: string; status: TaskStatus }) =>
-      current.map((task) =>
-        task.id === next.id ? { ...task, status: next.status } : task,
-      ),
+    (
+      current: TaskListItem[],
+      next:
+        | { kind: "status"; id: string; status: TaskStatus }
+        | { kind: "add"; task: TaskListItem },
+    ) =>
+      next.kind === "add"
+        ? [...current, next.task]
+        : current.map((task) =>
+            task.id === next.id ? { ...task, status: next.status } : task,
+          ),
   );
 
   function toggle(task: TaskListItem) {
     const status: TaskStatus = task.status === "done" ? "todo" : "done";
 
     startTransition(async () => {
-      patchTask({ id: task.id, status });
+      patchTask({ kind: "status", id: task.id, status });
       const result = await setTaskStatus({ id: task.id, status });
       // On failure React drops the optimistic value when the transition
       // settles, so the row reverts itself. We only have to explain why.
@@ -85,7 +92,27 @@ export function TaskList({
         </ul>
       )}
 
-      <AddTaskInline day={day} onError={setError} />
+      <AddTaskInline
+        day={day}
+        onError={setError}
+        onOptimistic={(title) =>
+          patchTask({
+            kind: "add",
+            task: {
+              // Only a React key until the server's row arrives.
+              id: `pending-${crypto.randomUUID()}`,
+              title,
+              status: "todo",
+              planned_date: day,
+              planned_minutes: null,
+              position: Number.MAX_SAFE_INTEGER,
+              project_id: null,
+              completed_at: null,
+              projects: null,
+            },
+          })
+        }
+      />
 
       {error ? (
         <p role="alert" className="pt-2 text-xs text-destructive">

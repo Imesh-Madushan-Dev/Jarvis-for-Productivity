@@ -79,24 +79,3 @@ export async function getWalletBalance(userId: string): Promise<number> {
 
   return (profile?.opening_balance_cents ?? 0) + (net?.net_cents ?? 0);
 }
-
-/**
- * Totals are folded in one pass over the rows we already fetched rather than
- * asking Postgres for a second aggregate query - the month is bounded, so the
- * rows are in memory anyway.
- */
-export function summarize(transactions: TransactionListItem[]) {
-  let income = 0;
-  let expense = 0;
-  const byCategory = new Map<string, number>();
-
-  for (const item of transactions) {
-    if (item.kind === "income") income += item.amount_cents;
-    else expense += item.amount_cents;
-
-    const key = item.category_id ?? "uncategorized";
-    byCategory.set(key, (byCategory.get(key) ?? 0) + item.amount_cents);
-  }
-
-  return { income, expense, net: income - expense, byCategory };
-}

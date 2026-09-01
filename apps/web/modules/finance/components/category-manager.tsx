@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Tag01Icon } from "@hugeicons/core-free-icons";
 
@@ -31,6 +31,10 @@ import {
   type MoneyKind,
 } from "../schema";
 
+type CategoryPatch =
+  | { type: "add"; row: Category }
+  | { type: "archive"; id: string; archived: boolean };
+
 export function CategoryManager({ categories }: { categories: Category[] }) {
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<MoneyKind>("expense");
@@ -40,7 +44,19 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const used = categories.map((category) => category.color);
+  // Same deal as the transaction list: the chip appears the moment you hit
+  // Add, and React rolls it back on its own if the write is rejected.
+  const [rows, patch] = useOptimistic(
+    categories,
+    (current: Category[], change: CategoryPatch) =>
+      change.type === "add"
+        ? [...current, change.row]
+        : current.map((row) =>
+            row.id === change.id ? { ...row, archived: change.archived } : row,
+          ),
+  );
+
+  const used = rows.map((category) => category.color);
   // Nothing picked yet means "the next free one", shown so the swatch row
   // always reflects what the new category will actually get.
   const chosen = color ?? nextFreeColor(used);
@@ -49,21 +65,25 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
     event.preventDefault();
     setError(null);
 
+    const draft = { name: name.trim(), kind, color: chosen, icon: icon.trim() };
+    setName("");
+    setIcon("");
+    setColor(null);
+
     startTransition(async () => {
-      const result = await createCategory({ name, kind, color: chosen, icon });
-      if (result.ok) {
-        setName("");
-        setIcon("");
-        setColor(null);
-      } else {
-        setError(result.error);
-      }
+      patch({
+        type: "add",
+        row: { id: `pending-${crypto.randomUUID()}`, archived: false, ...draft },
+      });
+      const result = await createCategory(draft);
+      setError(result.ok ? null : result.error);
     });
   }
 
-  function patch(id: string, change: Record<string, unknown>) {
+  function setArchived(id: string, archived: boolean) {
     startTransition(async () => {
-      const result = await updateCategory({ id, ...change });
+      patch({ type: "archive", id, archived });
+      const result = await updateCategory({ id, archived });
       setError(result.ok ? null : result.error);
     });
   }
@@ -159,14 +179,14 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
                 {group}
               </h3>
               <ul className="flex flex-wrap gap-1.5">
-                {categories
+                {rows
                   .filter((category) => category.kind === group)
                   .map((category) => (
                     <li key={category.id}>
                       <button
                         type="button"
                         onClick={() =>
-                          patch(category.id, { archived: !category.archived })
+                          setArchived(category.id, !category.archived)
                         }
                         title={
                           category.archived

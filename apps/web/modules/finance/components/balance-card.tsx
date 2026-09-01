@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
 
@@ -32,17 +32,27 @@ export function BalanceCard({
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+
+  // The figure you typed is the figure you see, from the keystroke onward.
+  const [shown, setShown] = useOptimistic(balance, (_: number, next: number) => next);
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = String(new FormData(event.currentTarget).get("balance") ?? "");
     setError(null);
 
+    const cents = Math.round(Number(value.replace(/[, ]/g, "")) * 100);
+    if (!Number.isFinite(cents)) {
+      setError("Enter a number.");
+      return;
+    }
+
+    setOpen(false);
     startTransition(async () => {
+      setShown(cents);
       const result = await setWalletBalance({ balance: value });
-      if (result.ok) setOpen(false);
-      else setError(result.error);
+      setError(result.ok ? null : result.error);
     });
   }
 
@@ -65,11 +75,11 @@ export function BalanceCard({
       <p
         className={cn(
           "mt-2 text-3xl font-semibold tracking-tight tabular-nums",
-          balance < 0 && "text-rose-600 dark:text-rose-400",
+          shown < 0 && "text-rose-600 dark:text-rose-400",
         )}
       >
-        {balance < 0 ? "−" : ""}
-        {formatMoney(Math.abs(balance), currency)}
+        {shown < 0 ? "−" : ""}
+        {formatMoney(Math.abs(shown), currency)}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
         Everything recorded, plus your starting amount.
@@ -94,7 +104,7 @@ export function BalanceCard({
                 autoComplete="off"
                 inputMode="decimal"
                 aria-label="Balance"
-                defaultValue={(balance / 100).toFixed(2)}
+                defaultValue={(shown / 100).toFixed(2)}
               />
               {error ? (
                 <p role="alert" className="pt-2 text-xs text-destructive">
@@ -104,8 +114,8 @@ export function BalanceCard({
             </div>
 
             <DialogFooter>
-              <Button type="submit" disabled={pending} className="t-press">
-                {pending ? "Saving…" : "Save"}
+              <Button type="submit" className="t-press">
+                Save
               </Button>
             </DialogFooter>
           </form>
