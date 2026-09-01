@@ -33,15 +33,12 @@ function deviceZone(): string {
 const CURRENCIES = ["USD", "EUR", "GBP", "LKR", "INR", "AUD", "CAD", "JPY"];
 
 export function GeneralSection({
-  displayName: initialName,
   timezone: initialZone,
   currency: initialCurrency,
 }: {
-  displayName: string;
   timezone: string;
   currency: string;
 }) {
-  const [displayName, setDisplayName] = useState(initialName);
   const [timezone, setTimezone] = useState(initialZone);
   const [currency, setCurrency] = useState(initialCurrency);
   const [status, setStatus] = useState<string | null>(null);
@@ -65,7 +62,7 @@ export function GeneralSection({
     setStatus(null);
 
     startTransition(async () => {
-      const result = await updateProfile({ displayName, timezone, currency });
+      const result = await updateProfile({ timezone, currency });
       if (result.ok) setStatus("Saved.");
       else setError(result.error);
     });
@@ -74,25 +71,11 @@ export function GeneralSection({
   return (
     <form onSubmit={submit}>
       <PanelHeading
-        title="Profile"
-        description="How you're addressed, and which clock the dashboard reads."
+        title="General"
+        description="Which clock the dashboard reads, and how money is written."
       />
 
       <RowGroup>
-        <Row
-          label="Display name"
-          description="Used in the dashboard greeting."
-          htmlFor="settings-display-name"
-        >
-          <Input
-            id="settings-display-name"
-            value={displayName}
-            onChange={(event) => setDisplayName(event.target.value)}
-            required
-            maxLength={80}
-          />
-        </Row>
-
         <Row
           label="Timezone"
           description="Decides which day the dashboard treats as today."

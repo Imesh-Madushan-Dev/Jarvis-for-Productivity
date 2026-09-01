@@ -7,10 +7,18 @@ import { invalidate } from "@/lib/cache";
 import { fail, ok, toUserMessage, type ActionResult } from "@/lib/result";
 import { createClient } from "@/lib/supabase/server";
 
-const updateProfileSchema = z.object({
-  displayName: z.string().trim().min(1, "Pick a name.").max(80),
+/**
+ * Every field optional: settings is several small forms now, and each saves
+ * only what it owns. `undefined` means "leave it alone" — which is different
+ * from a blank string, and why this is not one big form any more.
+ */
+const updateProfileSchema = z
+  .object({
+    displayName: z.string().trim().min(1, "Pick a name.").max(80).optional(),
   // Validated against the runtime's own zone table rather than a hardcoded list.
-  timezone: z.string().refine(
+  timezone: z
+    .string()
+    .refine(
     (value) => {
       try {
         new Intl.DateTimeFormat("en-US", { timeZone: value });
@@ -19,8 +27,9 @@ const updateProfileSchema = z.object({
         return false;
       }
     },
-    { message: "That isn't a timezone we recognise." },
-  ),
+      { message: "That isn't a timezone we recognise." },
+    )
+    .optional(),
   // ISO 4217 is always three letters; Intl rejects anything it cannot format.
   currency: z
     .string()
@@ -37,8 +46,12 @@ const updateProfileSchema = z.object({
         }
       },
       { message: "That isn't a currency code we recognise." },
-    ),
-});
+    )
+    .optional(),
+  })
+  .refine((value) => Object.values(value).some((field) => field !== undefined), {
+    message: "Nothing to save.",
+  });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
@@ -53,13 +66,21 @@ export async function updateProfile(
   const user = await requireUser();
   const supabase = await createClient();
 
+  const patch = {
+    ...(parsed.data.displayName !== undefined && {
+      display_name: parsed.data.displayName,
+    }),
+    ...(parsed.data.timezone !== undefined && {
+      timezone: parsed.data.timezone,
+    }),
+    ...(parsed.data.currency !== undefined && {
+      currency: parsed.data.currency,
+    }),
+  };
+
   const { error } = await supabase
     .from("profiles")
-    .update({
-      display_name: parsed.data.displayName,
-      timezone: parsed.data.timezone,
-      currency: parsed.data.currency,
-    })
+    .update(patch)
     .eq("id", user.id);
 
   if (error) return fail(toUserMessage(error));

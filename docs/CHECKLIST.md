@@ -49,6 +49,11 @@ light + dark.
 - [x] Calendar: hour strip, live current-time marker, positioned events
 - [x] Tasks: checkbox list, strikethrough on done, inline add
 - [x] Scratch Pad: debounced autosave with status
+- [x] Overview redesigned around today: a four-tile glance strip (left today /
+      up next / wallet / journal), then the day itself on the left and the
+      modules that report on it down the right
+- [x] Money and Journal snapshot cards - read-only by design; writing lives on
+      the page that owns the optimistic list
 - [x] Empty states for every panel
 - [x] Responsive; each panel streams in its own Suspense boundary
 - [x] Keyboard: ⌘K / ⌘F quick search

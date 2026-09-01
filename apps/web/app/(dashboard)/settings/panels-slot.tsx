@@ -33,7 +33,6 @@ export async function SettingsPanelsSlot({
       panels={{
         general: (
           <GeneralSection
-            displayName={profile.display_name ?? user.email?.split("@")[0] ?? ""}
             timezone={profile.timezone}
             currency={profile.currency}
           />
@@ -44,7 +43,14 @@ export async function SettingsPanelsSlot({
             publicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""}
           />
         ),
-        account: <AccountSection email={user.email ?? ""} />,
+        account: (
+          <AccountSection
+            email={user.email ?? ""}
+            displayName={
+              profile.display_name ?? user.email?.split("@")[0] ?? ""
+            }
+          />
+        ),
       }}
     />
   );

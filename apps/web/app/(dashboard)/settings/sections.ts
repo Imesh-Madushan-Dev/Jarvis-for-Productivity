@@ -26,7 +26,7 @@ export const SECTIONS: Section[] = [
     label: "General",
     group: "Workspace",
     icon: Settings02Icon,
-    description: "Your name and the timezone every day is measured in.",
+    description: "The timezone every day is measured in, and your currency.",
   },
   {
     id: "appearance",
@@ -47,7 +47,7 @@ export const SECTIONS: Section[] = [
     label: "Account",
     group: "Account",
     icon: UserCircleIcon,
-    description: "Sign-in details and session.",
+    description: "Your name, sign-in details and session.",
   },
 ];
 
