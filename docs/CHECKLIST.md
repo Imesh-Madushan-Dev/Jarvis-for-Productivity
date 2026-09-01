@@ -118,6 +118,27 @@ light + dark.
 - [ ] No snooze, no recurrence, and no "remind me 10 minutes before" derived
       from an event's start yet
 
+## 4d. Journal + memory
+- [x] `journal_entries` (owner-only RLS, DML grants), text or voice, one row
+      per entry with `day` as a DATE so a 1am entry stays on the right day
+- [x] Full-text via a **generated** `tsvector` column + GIN - it cannot drift
+      from the text it indexes
+- [x] `pgvector` (768 dims) + HNSW cosine index; `embedding_model` recorded per
+      row so vectors from different models are never compared
+- [x] `search_journal()` fuses both with **Reciprocal Rank Fusion** (k=60),
+      `security invoker` so RLS scopes it to the caller
+- [x] Embedding is written **after** the row: a missing or rate-limited
+      provider can never lose an entry, and `backfillEmbeddings` catches up
+- [x] Voice: MediaRecorder -> `/api/journal/voice` -> private `journal-audio`
+      bucket (owner-only storage policies, path prefixed with the user id) ->
+      transcription; a failed transcription still keeps the audio
+- [x] Agent tools `searchJournal` / `readJournal` / `addJournalEntry`; the last
+      3 entries are hinted in context, the rest retrieved on demand
+- [x] `bun modules/journal/journal.check.ts`
+- [ ] Rolling weekly summaries and a distilled `memory_facts` store - the layer
+      that turns retrieval into memory. Not built yet.
+- [ ] No entry editing in the UI yet (the action exists), and no audio playback
+
 ## 5. Micro-interactions (transitions.dev tokens)
 - [x] Motion token scale in `globals.css`; no component hardcodes a duration
 - [x] `checkbox-check` installed verbatim - box fills, tick stroke-draws

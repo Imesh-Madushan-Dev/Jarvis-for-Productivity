@@ -7,6 +7,7 @@ const PAGE_NAMES: Record<string, string> = {
   "/calendar": "Calendar",
   "/tasks": "Tasks",
   "/finance": "Money tracker",
+  "/journal": "Journal",
   "/settings": "Settings",
 };
 
@@ -34,7 +35,8 @@ export async function buildAwareness(userId: string, pathname: string) {
 
   const monthFrom = `${day.slice(0, 7)}-01`;
 
-  const [tasks, events, notes, categories, money, walletNet] = await Promise.all([
+  const [tasks, events, notes, categories, money, walletNet, journal] =
+    await Promise.all([
     supabase
       .from("tasks")
       .select("id,title,status,planned_minutes,remind_at")
@@ -76,6 +78,16 @@ export async function buildAwareness(userId: string, pathname: string) {
       .select("net_cents")
       .eq("user_id", userId)
       .maybeSingle(),
+    // Only the most recent few, as a hint that the journal exists and is worth
+    // searching. The full text is retrieved on demand by the searchJournal
+    // tool - putting entries in every request would be expensive and would
+    // bury whatever is actually being asked about.
+    supabase
+      .from("journal_entries")
+      .select("day,body,transcript")
+      .eq("user_id", userId)
+      .order("day", { ascending: false })
+      .limit(3),
   ]);
 
   const currency = profile?.currency ?? "USD";
@@ -109,6 +121,16 @@ export async function buildAwareness(userId: string, pathname: string) {
     `Currency: ${currency}. Amounts are given in major units.`,
     `Wallet balance: ${(((profile?.opening_balance_cents ?? 0) + (walletNet.data?.net_cents ?? 0)) / 100).toFixed(2)}.`,
     `This month so far: income ${(totalCents("income") / 100).toFixed(2)}, expenses ${(totalCents("expense") / 100).toFixed(2)}.`,
+    "",
+    `Journal (${journal.data?.length ?? 0} recent of possibly many):`,
+    ...(journal.data ?? []).map(
+      (entry) =>
+        `  - ${entry.day}: ${(entry.body || entry.transcript)
+          .replace(/\s+/g, " ")
+          .slice(0, 160)}`,
+    ),
+    "Use the searchJournal tool for anything older or more specific.",
+    "",
     `Money categories (${categories.data?.length ?? 0}):`,
     ...(categories.data ?? []).map(
       (category) => `  - [${category.kind}] ${category.name} · id ${category.id}`,

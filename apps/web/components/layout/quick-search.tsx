@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  Book02Icon,
   Calendar03Icon,
   CheckmarkCircle02Icon,
   DashboardSquare01Icon,
@@ -37,6 +38,7 @@ const DESTINATIONS = [
   { label: "Calendar", href: "/calendar", icon: Calendar03Icon },
   { label: "Tasks", href: "/tasks", icon: CheckmarkCircle02Icon },
   { label: "Money", href: "/finance", icon: PieChart01Icon },
+  { label: "Journal", href: "/journal", icon: Book02Icon },
 ];
 
 export function QuickSearch() {

@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      journal_entries: {
+        Row: {
+          audio_path: string | null
+          body: string
+          created_at: string
+          day: string
+          duration_seconds: number | null
+          embedding: string | null
+          embedding_model: string | null
+          id: string
+          source: Database["public"]["Enums"]["journal_source"]
+          transcript: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audio_path?: string | null
+          body?: string
+          created_at?: string
+          day: string
+          duration_seconds?: number | null
+          embedding?: string | null
+          embedding_model?: string | null
+          id?: string
+          source?: Database["public"]["Enums"]["journal_source"]
+          transcript?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audio_path?: string | null
+          body?: string
+          created_at?: string
+          day?: string
+          duration_seconds?: number | null
+          embedding?: string | null
+          embedding_model?: string | null
+          id?: string
+          source?: Database["public"]["Enums"]["journal_source"]
+          transcript?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -425,12 +470,32 @@ export type Database = {
       }
     }
     Functions: {
+      search_journal: {
+        Args: {
+          p_query: string
+          p_embedding?: string | null
+          p_model?: string | null
+          p_limit?: number
+          p_from?: string | null
+          p_to?: string | null
+        }
+        Returns: {
+          id: string
+          day: string
+          source: Database["public"]["Enums"]["journal_source"]
+          body: string
+          transcript: string
+          created_at: string
+          score: number
+        }[]
+      }
       set_wallet_balance: {
         Args: { target_cents: number }
         Returns: undefined
       }
     }
     Enums: {
+      journal_source: "text" | "voice"
       money_kind: "income" | "expense"
       note_kind: "note" | "scratchpad"
       task_status: "todo" | "doing" | "done"
@@ -455,6 +520,7 @@ export type Enums<T extends keyof PublicSchema["Enums"]> =
 export const Constants = {
   public: {
     Enums: {
+      journal_source: ["text", "voice"],
       money_kind: ["income", "expense"],
       note_kind: ["note", "scratchpad"],
       task_status: ["todo", "doing", "done"],

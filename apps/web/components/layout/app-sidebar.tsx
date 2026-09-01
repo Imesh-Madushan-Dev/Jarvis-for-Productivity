@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Attachment01Icon,
+  Book02Icon,
   Calendar03Icon,
   CheckmarkCircle02Icon,
   DashboardSquare01Icon,
@@ -52,6 +53,7 @@ const PRIMARY_NAV: NavItem[] = [
   { label: "Calendar", href: "/calendar", icon: Calendar03Icon, ready: true },
   { label: "Tasks", href: "/tasks", icon: CheckmarkCircle02Icon, ready: true },
   { label: "Money", href: "/finance", icon: PieChart01Icon, ready: true },
+  { label: "Journal", href: "/journal", icon: Book02Icon, ready: true },
   { label: "Files", href: "/files", icon: Attachment01Icon, ready: false },
   {
     label: "Templates",
