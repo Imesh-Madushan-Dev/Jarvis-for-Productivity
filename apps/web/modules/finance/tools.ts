@@ -2,10 +2,17 @@ import { tool } from "ai";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
-import { createCategory, createTransaction } from "./actions";
+import {
+  createCategory,
+  createTransaction,
+  setWalletBalance,
+  updateTransaction,
+} from "./actions";
 import {
   createCategorySchema,
   createTransactionSchema,
+  setWalletBalanceSchema,
+  updateTransactionSchema,
   monthBounds,
   monthSchema,
   TRANSACTION_COLUMNS,
@@ -22,6 +29,30 @@ export function financeTools(userId: string) {
         return result.ok
           ? { created: true, id: result.data.id }
           : { created: false, error: result.error };
+      },
+    }),
+
+    updateTransaction: tool({
+      description:
+        "Change an existing entry. Every field is required — send the current value for anything the user did not ask to change. Entry ids come from monthlyMoneySummary.",
+      inputSchema: updateTransactionSchema,
+      execute: async (input) => {
+        const result = await updateTransaction(input);
+        return result.ok
+          ? { updated: true }
+          : { updated: false, error: result.error };
+      },
+    }),
+
+    setWalletBalance: tool({
+      description:
+        "Set what the wallet actually holds right now, in major units. Use when the user states their balance ('I have 5000 left'); it adjusts the opening balance and never invents a transaction.",
+      inputSchema: setWalletBalanceSchema,
+      execute: async (input) => {
+        const result = await setWalletBalance(input);
+        return result.ok
+          ? { updated: true }
+          : { updated: false, error: result.error };
       },
     }),
 

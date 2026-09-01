@@ -7,10 +7,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
 import { todayInZone } from "@/lib/day";
 import { cn } from "@/lib/utils";
-import { AddTransactionDialog } from "@/modules/finance/components/add-transaction";
+import { BalanceCard } from "@/modules/finance/components/balance-card";
 import { CategoryManager } from "@/modules/finance/components/category-manager";
+import { AddTransactionDialog } from "@/modules/finance/components/transaction-dialog";
 import { TransactionList } from "@/modules/finance/components/transaction-list";
-import { listCategories, listTransactions, summarize } from "@/modules/finance/queries";
+import {
+  getWalletBalance,
+  listCategories,
+  listTransactions,
+  summarize,
+} from "@/modules/finance/queries";
 import {
   formatMoney,
   formatMonthLabel,
@@ -23,14 +29,16 @@ import { getProfile } from "@/modules/profile/queries";
 
 export const metadata = { title: "Money" };
 
-/** Neutral by design — colour is reserved for the chart, never for chrome. */
+/** Surfaces stay neutral; only the number carries the in/out colour. */
 function StatCard({
   label,
   value,
+  tone,
   hint,
 }: {
   label: string;
   value: string;
+  tone: "in" | "out";
   hint?: string;
 }) {
   return (
@@ -38,7 +46,15 @@ function StatCard({
       <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         {label}
       </p>
-      <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums">
+      <p
+        className={cn(
+          "mt-2 text-3xl font-semibold tracking-tight tabular-nums",
+          tone === "in"
+            ? "text-emerald-600 dark:text-emerald-400"
+            : "text-rose-600 dark:text-rose-400",
+        )}
+      >
+        {tone === "in" ? "+" : "−"}
         {value}
       </p>
       {hint ? (
@@ -131,34 +147,37 @@ async function FinanceBody({ month }: { month?: string }) {
   // "This month" is resolved from the profile's timezone, not the server's
   // clock, and only inside this request-time scope.
   const active = month ?? todayInZone(profile.timezone).slice(0, 7);
-  const [categories, transactions] = await Promise.all([
+  const [categories, transactions, balance] = await Promise.all([
     listCategories(user.id),
     listTransactions(user.id, active),
+    getWalletBalance(user.id),
   ]);
-  const { income, expense, net, byCategory } = summarize(transactions);
+  const { income, expense, byCategory } = summarize(transactions);
   const currency = profile.currency;
 
   return (
     <div className="flex flex-col gap-5">
       <div className="grid gap-3 sm:grid-cols-3">
-        <StatCard label="Income" value={formatMoney(income, currency)} />
+        <StatCard
+          label="Income"
+          tone="in"
+          value={formatMoney(income, currency)}
+          hint="This month"
+        />
         <StatCard
           label="Spent"
+          tone="out"
           value={formatMoney(expense, currency)}
           hint={
             income > 0
-              ? `${Math.round((expense / income) * 100)}% of income`
-              : undefined
+              ? `${Math.round((expense / income) * 100)}% of this month's income`
+              : "This month"
           }
         />
-        <StatCard
-          label="Left over"
-          value={`${net < 0 ? "−" : ""}${formatMoney(Math.abs(net), currency)}`}
-          hint={net < 0 ? "Spending outran income" : undefined}
-        />
+        <BalanceCard balance={balance} currency={currency} />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <section className="rounded-2xl border border-border bg-card p-5">
           <div className="flex items-center justify-between gap-4 pb-2">
             <h2 className="text-base font-medium">
@@ -170,6 +189,7 @@ async function FinanceBody({ month }: { month?: string }) {
             transactions={transactions}
             categories={categories}
             currency={currency}
+            today={todayInZone(profile.timezone)}
           />
         </section>
 
@@ -224,10 +244,10 @@ export default async function FinancePage({
         </Suspense>
       }
     >
-      <Suspense
-        key={active ?? "current"}
-        fallback={<Skeleton className="h-96 w-full rounded-2xl" />}
-      >
+      {/* No `key`: reusing the boundary keeps the current month on screen
+          while the next one loads, instead of flashing a full-page skeleton
+          on every arrow click. */}
+      <Suspense fallback={<Skeleton className="h-96 w-full rounded-2xl" />}>
         <FinanceBody month={active} />
       </Suspense>
     </PageShell>

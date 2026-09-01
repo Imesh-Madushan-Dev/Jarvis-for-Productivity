@@ -77,7 +77,34 @@ export const createTransactionSchema = z.object({
 });
 export type CreateTransactionInput = z.input<typeof createTransactionSchema>;
 
+export const updateTransactionSchema = z.object({
+  id: z.uuid(),
+  kind: moneyKind,
+  amount: amountToCents,
+  occurredOn: z.iso.date(),
+  categoryId: z.uuid().nullish(),
+  note: z.string().trim().max(300).default(""),
+});
+export type UpdateTransactionInput = z.input<typeof updateTransactionSchema>;
+
 export const deleteTransactionSchema = z.object({ id: z.uuid() });
+
+/**
+ * A balance, unlike a transaction, may legitimately be zero or negative — so
+ * it gets its own parser rather than loosening the amount one.
+ */
+export const setWalletBalanceSchema = z.object({
+  balance: z.union([z.string().trim().min(1), z.number()]).transform((value, ctx) => {
+    const parsed =
+      typeof value === "number" ? value : Number(value.replace(/[, ]/g, ""));
+    if (!Number.isFinite(parsed)) {
+      ctx.addIssue({ code: "custom", message: "Enter a number." });
+      return z.NEVER;
+    }
+    return Math.round(parsed * 100);
+  }),
+});
+export type SetWalletBalanceInput = z.input<typeof setWalletBalanceSchema>;
 
 export const createCategorySchema = z.object({
   name: z.string().trim().min(1, "Give the category a name.").max(60),

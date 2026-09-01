@@ -24,7 +24,7 @@ export async function buildAwareness(userId: string, pathname: string) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name,timezone,currency")
+    .select("display_name,timezone,currency,opening_balance_cents")
     .eq("id", userId)
     .maybeSingle();
 
@@ -34,7 +34,7 @@ export async function buildAwareness(userId: string, pathname: string) {
 
   const monthFrom = `${day.slice(0, 7)}-01`;
 
-  const [tasks, events, notes, categories, money] = await Promise.all([
+  const [tasks, events, notes, categories, money, walletNet] = await Promise.all([
     supabase
       .from("tasks")
       .select("id,title,status,planned_minutes")
@@ -71,6 +71,11 @@ export async function buildAwareness(userId: string, pathname: string) {
       .eq("user_id", userId)
       .gte("occurred_on", monthFrom)
       .limit(500),
+    supabase
+      .from("wallet_net")
+      .select("net_cents")
+      .eq("user_id", userId)
+      .maybeSingle(),
   ]);
 
   const currency = profile?.currency ?? "USD";
@@ -103,6 +108,7 @@ export async function buildAwareness(userId: string, pathname: string) {
     ),
     "",
     `Currency: ${currency}. Amounts are given in major units.`,
+    `Wallet balance: ${(((profile?.opening_balance_cents ?? 0) + (walletNet.data?.net_cents ?? 0)) / 100).toFixed(2)}.`,
     `This month so far: income ${(totalCents("income") / 100).toFixed(2)}, expenses ${(totalCents("expense") / 100).toFixed(2)}.`,
     `Money categories (${categories.data?.length ?? 0}):`,
     ...(categories.data ?? []).map(

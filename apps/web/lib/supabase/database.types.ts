@@ -192,6 +192,7 @@ export type Database = {
           currency: string
           display_name: string | null
           id: string
+          opening_balance_cents: number
           timezone: string
           updated_at: string
         }
@@ -201,6 +202,7 @@ export type Database = {
           currency?: string
           display_name?: string | null
           id: string
+          opening_balance_cents?: number
           timezone?: string
           updated_at?: string
         }
@@ -210,6 +212,7 @@ export type Database = {
           currency?: string
           display_name?: string | null
           id?: string
+          opening_balance_cents?: number
           timezone?: string
           updated_at?: string
         }
@@ -303,7 +306,13 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      wallet_net: {
+        Row: {
+          net_cents: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

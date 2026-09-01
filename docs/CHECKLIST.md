@@ -80,13 +80,18 @@ light + dark.
       entries but stop being offered)
 - [x] shadcn `Select` for category/kind; colour is chart-only — cards, chips
       and rows stay on neutral surface tokens
-- [x] Optimistic delete with automatic revert
-- [x] Agent tools: `createTransaction`, `createCategory`, `monthlyMoneySummary`;
-      categories, currency and month-to-date totals are in `buildAwareness`
+- [x] Optimistic delete with automatic revert; edit via the same dialog form
+- [x] Wallet balance card (`profiles.opening_balance_cents` + the `wallet_net`
+      view, aggregated in Postgres) — editable by hand and by the agent, and
+      never written as a phantom adjusting transaction
+- [x] Income green, spending red on the numbers only; surfaces stay neutral
+- [x] Month switching reuses the Suspense boundary, so the page no longer
+      flashes a skeleton on every arrow click
+- [x] Agent tools: `createTransaction`, `updateTransaction`, `createCategory`,
+      `setWalletBalance`, `monthlyMoneySummary`; categories, currency, balance
+      and month-to-date totals are in `buildAwareness`
 - [x] Money math covered by `modules/finance/finance.check.ts`
       (`bun modules/finance/finance.check.ts`)
-- [ ] No editing an existing entry — delete and re-add. Add an update action if
-      that gets annoying.
 - [ ] No budgets or recurring entries yet
 
 ## 5. Micro-interactions (transitions.dev tokens)

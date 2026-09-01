@@ -53,6 +53,34 @@ export async function listTransactions(
 }
 
 /**
+ * Wallet balance: what was there before the first entry, plus everything
+ * recorded since. Summed by Postgres through the `wallet_net` view, so the
+ * all-time figure costs one row rather than every transaction.
+ */
+export async function getWalletBalance(userId: string): Promise<number> {
+  "use cache: private";
+  cacheTag(`transactions:${userId}`);
+  cacheTag(`profile:${userId}`);
+  cacheLife({ stale: 60 });
+
+  const supabase = await createClient();
+  const [{ data: profile }, { data: net }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("opening_balance_cents")
+      .eq("id", userId)
+      .maybeSingle(),
+    supabase
+      .from("wallet_net")
+      .select("net_cents")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
+
+  return (profile?.opening_balance_cents ?? 0) + (net?.net_cents ?? 0);
+}
+
+/**
  * Totals are folded in one pass over the rows we already fetched rather than
  * asking Postgres for a second aggregate query — the month is bounded, so the
  * rows are in memory anyway.

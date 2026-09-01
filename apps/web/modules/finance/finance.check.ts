@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import { summarize } from "./queries";
 import {
   createTransactionSchema,
+  setWalletBalanceSchema,
   formatMoney,
   monthBounds,
   shiftMonth,
@@ -40,6 +41,14 @@ for (const bad of ["0", "-5", "abc", ""]) {
     `${JSON.stringify(bad)} must be rejected`,
   );
 }
+
+// --- a balance, unlike an amount, may be zero or negative -------------------
+const balance = (input: string | number) =>
+  setWalletBalanceSchema.parse({ balance: input }).balance;
+assert.equal(balance("0"), 0);
+assert.equal(balance("-250.75"), -25075);
+assert.equal(balance("23,828.68"), 2382868);
+assert.equal(setWalletBalanceSchema.safeParse({ balance: "abc" }).success, false);
 
 // --- month math wraps years ------------------------------------------------
 assert.equal(shiftMonth("2026-12", 1), "2027-01");

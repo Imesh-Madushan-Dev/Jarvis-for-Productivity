@@ -2,7 +2,7 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Delete02Icon } from "@hugeicons/core-free-icons";
+import { Delete02Icon, PencilEdit02Icon } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/lib/utils";
 import { deleteTransaction } from "../actions";
@@ -12,17 +12,21 @@ import {
   type Category,
   type TransactionListItem,
 } from "../schema";
+import { EditTransactionDialog } from "./transaction-dialog";
 
 export function TransactionList({
   transactions,
   categories,
   currency,
+  today,
 }: {
   transactions: TransactionListItem[];
   categories: Category[];
   currency: string;
+  today: string;
 }) {
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<TransactionListItem | null>(null);
   const [, startTransition] = useTransition();
 
   const byId = new Map(categories.map((category) => [category.id, category]));
@@ -61,10 +65,10 @@ export function TransactionList({
           return (
             <li
               key={row.id}
-              className="group flex items-center gap-3 border-b border-border/60 py-3 last:border-b-0"
+              className="group flex items-center gap-2.5 border-b border-border/60 py-2 last:border-b-0"
             >
               {/* Colour is a data channel only: the dot ties the row back to
-                  its slice of the chart, the row itself stays neutral. */}
+                  its slice of the chart. */}
               <span
                 aria-hidden="true"
                 className={cn(
@@ -85,21 +89,35 @@ export function TransactionList({
               <span
                 className={cn(
                   "shrink-0 text-sm tabular-nums",
-                  income ? "text-foreground" : "text-muted-foreground",
+                  income
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-rose-600 dark:text-rose-400",
                 )}
               >
                 {income ? "+" : "−"}
                 {formatMoney(row.amount_cents, currency)}
               </span>
 
-              <button
-                type="button"
-                onClick={() => remove(row.id)}
-                aria-label={`Delete ${row.note || "entry"}`}
-                className="t-press shrink-0 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
-              >
-                <HugeiconsIcon icon={Delete02Icon} className="size-4" />
-              </button>
+              {/* Reserved width, so revealing the actions never reflows the
+                  amounts column. */}
+              <div className="flex w-14 shrink-0 justify-end gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                <button
+                  type="button"
+                  onClick={() => setEditing(row)}
+                  aria-label={`Edit ${row.note || "entry"}`}
+                  className="t-press rounded-md p-1 text-muted-foreground hover:text-foreground"
+                >
+                  <HugeiconsIcon icon={PencilEdit02Icon} className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => remove(row.id)}
+                  aria-label={`Delete ${row.note || "entry"}`}
+                  className="t-press rounded-md p-1 text-muted-foreground hover:text-destructive"
+                >
+                  <HugeiconsIcon icon={Delete02Icon} className="size-4" />
+                </button>
+              </div>
             </li>
           );
         })}
@@ -110,6 +128,13 @@ export function TransactionList({
           {error}
         </p>
       ) : null}
+
+      <EditTransactionDialog
+        entry={editing}
+        categories={categories}
+        today={today}
+        onClose={() => setEditing(null)}
+      />
     </div>
   );
 }
