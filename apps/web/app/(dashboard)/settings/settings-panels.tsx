@@ -12,7 +12,7 @@ const GROUPS = ["Workspace", "Account"] as const;
  * Rail on the left, one panel on the right.
  *
  * Every section's markup is already on the client, so switching is local state
- * plus a `replaceState` — a route push would re-render the tree to show markup
+ * plus a `replaceState` - a route push would re-render the tree to show markup
  * the browser is holding. `?tab=` still opens the right panel on a deep link.
  *
  * ponytail: no search box over three sections. Add one back if the rail ever
@@ -28,7 +28,7 @@ export function SettingsPanels({
   panels: Record<SectionId, ReactNode>;
   /** False inside the dialog: the URL belongs to the page underneath. */
   deepLink?: boolean;
-  /** False inside the dialog, which is already a card — no nested chrome. */
+  /** False inside the dialog, which is already a card - no nested chrome. */
   framed?: boolean;
 }) {
   const [section, setSection] = useState<SectionId>(initialSection);
@@ -50,7 +50,7 @@ export function SettingsPanels({
       className={cn(
         "grid gap-4 md:grid-cols-[13.5rem_1fr] md:gap-0",
         framed &&
-          "overflow-hidden rounded-2xl border border-border bg-card",
+        "overflow-hidden rounded-2xl border border-border bg-card",
       )}
     >
       {/* Rail. A horizontal strip on phones, a column from md up. */}

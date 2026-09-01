@@ -24,29 +24,40 @@ import {
 import { cn } from "@/lib/utils";
 import { createCategory, updateCategory } from "../actions";
 import {
-  PASTEL_BAR,
-  PASTEL_COLORS,
+  categoryColor,
+  CATEGORY_PALETTE,
+  nextFreeColor,
   type Category,
   type MoneyKind,
-  type PastelColor,
 } from "../schema";
 
 export function CategoryManager({ categories }: { categories: Category[] }) {
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<MoneyKind>("expense");
-  const [color, setColor] = useState<PastelColor>("mint");
   const [name, setName] = useState("");
+  const [icon, setIcon] = useState("");
+  const [color, setColor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const used = categories.map((category) => category.color);
+  // Nothing picked yet means "the next free one", shown so the swatch row
+  // always reflects what the new category will actually get.
+  const chosen = color ?? nextFreeColor(used);
 
   function add(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
 
     startTransition(async () => {
-      const result = await createCategory({ name, kind, color });
-      if (result.ok) setName("");
-      else setError(result.error);
+      const result = await createCategory({ name, kind, color: chosen, icon });
+      if (result.ok) {
+        setName("");
+        setIcon("");
+        setColor(null);
+      } else {
+        setError(result.error);
+      }
     });
   }
 
@@ -71,13 +82,21 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
         <DialogHeader>
           <DialogTitle>Categories</DialogTitle>
           <DialogDescription>
-            The colour is the one this category gets in the chart. Archived
+            Each one carries its own emoji and accent colour. Archived
             categories stay on old entries but stop being offered.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={add} className="flex flex-col gap-3 py-3">
-          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_auto]">
+          <div className="grid gap-2 sm:grid-cols-[3.5rem_minmax(0,1fr)_8rem_auto]">
+            <Input
+              value={icon}
+              onChange={(event) => setIcon(event.target.value)}
+              placeholder="🍔"
+              aria-label="Emoji"
+              maxLength={12}
+              className="text-center"
+            />
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -106,23 +125,30 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
 
           <div
             role="group"
-            aria-label="Colour"
+            aria-label="Accent colour"
             className="flex flex-wrap gap-1.5"
           >
-            {PASTEL_COLORS.map((swatch) => (
-              <button
-                key={swatch}
-                type="button"
-                onClick={() => setColor(swatch)}
-                aria-label={swatch}
-                aria-pressed={color === swatch}
-                className={cn(
-                  "t-press size-6 rounded-full ring-offset-2 ring-offset-background",
-                  PASTEL_BAR[swatch],
-                  color === swatch && "ring-2 ring-foreground/40",
-                )}
-              />
-            ))}
+            {CATEGORY_PALETTE.map((swatch) => {
+              const taken = used.some(
+                (value) => value.toUpperCase() === swatch,
+              );
+              return (
+                <button
+                  key={swatch}
+                  type="button"
+                  onClick={() => setColor(swatch)}
+                  aria-label={taken ? `${swatch} (already used)` : swatch}
+                  aria-pressed={chosen === swatch}
+                  style={{ backgroundColor: swatch }}
+                  className={cn(
+                    "t-press size-6 rounded-full ring-offset-2 ring-offset-background",
+                    // Used colours stay pickable but read as spoken for.
+                    taken && "opacity-35",
+                    chosen === swatch && "opacity-100 ring-2 ring-foreground/40",
+                  )}
+                />
+              );
+            })}
           </div>
         </form>
 
@@ -148,18 +174,16 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
                             : "Archive this category"
                         }
                         className={cn(
-                          "t-press flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs text-foreground hover:bg-accent",
+                          "t-press flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs text-foreground hover:bg-accent",
                           category.archived &&
                             "text-muted-foreground line-through opacity-60",
                         )}
+                        style={{
+                          borderColor: `${categoryColor(category.color)}66`,
+                          backgroundColor: `${categoryColor(category.color)}14`,
+                        }}
                       >
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            "size-2 rounded-full",
-                            PASTEL_BAR[category.color],
-                          )}
-                        />
+                        <span aria-hidden="true">{category.icon || "•"}</span>
                         {category.name}
                       </button>
                     </li>

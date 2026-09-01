@@ -86,7 +86,7 @@ export function WeekGrid({
               </header>
 
               {dayEvents.length === 0 ? (
-                <p className="mt-3 text-xs text-muted-foreground/60">—</p>
+                <p className="mt-3 text-xs text-muted-foreground/60">-</p>
               ) : (
                 <ul className="mt-3 flex flex-col gap-1.5">
                   {dayEvents.map((event) => (

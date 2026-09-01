@@ -148,6 +148,7 @@ function TransactionForm({
             <SelectItem value={UNCATEGORISED}>Uncategorised</SelectItem>
             {options.map((category) => (
               <SelectItem key={category.id} value={category.id}>
+                {category.icon ? `${category.icon} ` : ""}
                 {category.name}
               </SelectItem>
             ))}

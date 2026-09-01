@@ -45,7 +45,7 @@ type NavItem = {
 };
 
 // ponytail: `ready: false` items have no data model yet, so they render
-// disabled — a nav item that goes nowhere is worse than one that says so.
+// disabled - a nav item that goes nowhere is worse than one that says so.
 const PRIMARY_NAV: NavItem[] = [
   { label: "Overview", href: "/", icon: DashboardSquare01Icon, ready: true },
   { label: "Notes", href: "/notes", icon: Note01Icon, ready: true },
@@ -113,7 +113,7 @@ function NavList({ items }: { items: NavItem[] }) {
           ) : (
             <SidebarMenuButton
               aria-disabled
-              tooltip={`${item.label} — not built yet`}
+              tooltip={`${item.label} - not built yet`}
               className="cursor-not-allowed opacity-50"
               onClick={(event) => event.preventDefault()}
             >

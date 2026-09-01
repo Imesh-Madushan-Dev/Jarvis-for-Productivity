@@ -7,8 +7,8 @@ import { Delete02Icon, PencilEdit02Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { deleteTransaction } from "../actions";
 import {
+  categoryColor,
   formatMoney,
-  PASTEL_BAR,
   type Category,
   type TransactionListItem,
 } from "../schema";
@@ -67,15 +67,18 @@ export function TransactionList({
               key={row.id}
               className="group flex items-center gap-2.5 border-b border-border/60 py-2 last:border-b-0"
             >
-              {/* Colour is a data channel only: the dot ties the row back to
-                  its slice of the chart. */}
+              {/* The category's own accent, tinted for the tile so text never
+                  sits on a saturated colour. */}
               <span
                 aria-hidden="true"
-                className={cn(
-                  "size-2 shrink-0 rounded-full",
-                  category ? PASTEL_BAR[category.color] : "bg-muted-foreground/30",
-                )}
-              />
+                className="grid size-9 shrink-0 place-items-center rounded-full text-base"
+                style={{
+                  backgroundColor: `${categoryColor(category?.color)}22`,
+                  color: categoryColor(category?.color),
+                }}
+              >
+                {category?.icon || "•"}
+              </span>
 
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm text-foreground">

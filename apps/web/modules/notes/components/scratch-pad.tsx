@@ -57,7 +57,7 @@ export function ScratchPad({ initialBody }: { initialBody: string }) {
             : status === "saved"
               ? "Saved"
               : status === "error"
-                ? "Couldn't save — retrying on next edit"
+                ? "Couldn't save - retrying on next edit"
                 : ""}
         </span>
       </div>

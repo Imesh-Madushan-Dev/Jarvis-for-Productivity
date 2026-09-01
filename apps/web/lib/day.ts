@@ -101,7 +101,7 @@ export function weekDays(day: string): string[] {
   return Array.from({ length: 7 }, (_, index) => toDay(addDays(start, index)));
 }
 
-/** Whole weeks covering the month containing `day` — 35 or 42 cells. */
+/** Whole weeks covering the month containing `day` - 35 or 42 cells. */
 export function monthDays(day: string): string[] {
   const base = anchor(day);
   return eachDayOfInterval({

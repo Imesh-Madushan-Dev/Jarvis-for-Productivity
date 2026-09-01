@@ -68,9 +68,9 @@ export default function DashboardLayout({
         </Suspense>
 
         <SidebarInset className="min-w-0">
-     
-       
-          {/* The single place page gutters are set — pages bring no px of their
+
+
+          {/* The single place page gutters are set - pages bring no px of their
               own. pb-40 leaves room for the fixed assistant bar. The cap is
               generous rather than narrow: it only kicks in past ~1600px, so wide
               screens get breathing room instead of a dead zone. */}

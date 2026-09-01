@@ -25,7 +25,7 @@ export function AppearanceSection() {
     <div>
       <PanelHeading
         title="Appearance"
-        description="Saved in this browser — no changes are sent to your account."
+        description="Saved in this browser - no changes are sent to your account."
       />
 
       <RowGroup>

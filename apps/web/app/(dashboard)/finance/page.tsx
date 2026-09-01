@@ -18,10 +18,10 @@ import {
   summarize,
 } from "@/modules/finance/queries";
 import {
+  categoryColor,
   formatMoney,
   formatMonthLabel,
   monthSchema,
-  PASTEL_BAR,
   shiftMonth,
   type Category,
 } from "@/modules/finance/schema";
@@ -90,7 +90,7 @@ function Breakdown({
     );
   }
 
-  // Bars are relative to the biggest category, not to the total — small
+  // Bars are relative to the biggest category, not to the total - small
   // categories stay readable instead of collapsing into a hairline.
   const max = rows[0].total;
 
@@ -98,15 +98,17 @@ function Breakdown({
     <ul className="flex flex-col gap-3">
       {rows.map(({ category, total }) => (
         <li key={category.id} className="flex items-center gap-3">
-          <span
-            aria-hidden="true"
-            className={cn("size-2 shrink-0 rounded-full", PASTEL_BAR[category.color])}
-          />
+          <span aria-hidden="true" className="w-5 shrink-0 text-center text-sm">
+            {category.icon || "•"}
+          </span>
           <span className="w-24 shrink-0 truncate text-sm">{category.name}</span>
           <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
             <div
-              className={cn("h-full rounded-full", PASTEL_BAR[category.color])}
-              style={{ width: `${(total / max) * 100}%` }}
+              className="h-full rounded-full"
+              style={{
+                width: `${(total / max) * 100}%`,
+                backgroundColor: categoryColor(category.color),
+              }}
             />
           </div>
           <span className="w-24 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
@@ -231,7 +233,7 @@ export default async function FinancePage({
 }) {
   const { month } = await searchParams;
   // The month lives in the URL so the server knows the query window before it
-  // renders — and a month is bookmarkable.
+  // renders - and a month is bookmarkable.
   const active = monthSchema.safeParse(month).success ? month : undefined;
 
   return (

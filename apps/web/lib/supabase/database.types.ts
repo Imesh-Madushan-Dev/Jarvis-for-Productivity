@@ -14,11 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      messages: {
+        Row: {
+          created_at: string
+          id: string
+          parts: Json
+          position: number
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          parts?: Json
+          position?: number
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parts?: Json
+          position?: number
+          role?: string
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      threads: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           archived: boolean
           color: string
           created_at: string
+          icon: string
           id: string
           kind: Database["public"]["Enums"]["money_kind"]
           name: string
@@ -29,6 +92,7 @@ export type Database = {
           archived?: boolean
           color?: string
           created_at?: string
+          icon?: string
           id?: string
           kind: Database["public"]["Enums"]["money_kind"]
           name: string
@@ -39,6 +103,7 @@ export type Database = {
           archived?: boolean
           color?: string
           created_at?: string
+          icon?: string
           id?: string
           kind?: Database["public"]["Enums"]["money_kind"]
           name?: string

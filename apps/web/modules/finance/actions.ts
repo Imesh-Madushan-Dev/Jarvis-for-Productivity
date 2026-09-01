@@ -6,6 +6,7 @@ import { fail, ok, toUserMessage, type ActionResult } from "@/lib/result";
 import { createClient } from "@/lib/supabase/server";
 import {
   createCategorySchema,
+  nextFreeColor,
   createTransactionSchema,
   deleteTransactionSchema,
   setWalletBalanceSchema,
@@ -143,9 +144,21 @@ export async function createCategory(
   const user = await requireUser();
   const supabase = await createClient();
 
+  // Colour is chosen against what already exists, so two categories never
+  // share an accent unless the user picks one deliberately.
+  let color = parsed.data.color;
+  if (!color) {
+    const { data: existing } = await supabase
+      .from("categories")
+      .select("color")
+      .eq("user_id", user.id)
+      .limit(200);
+    color = nextFreeColor((existing ?? []).map((row) => row.color));
+  }
+
   const { data, error } = await supabase
     .from("categories")
-    .insert({ user_id: user.id, ...parsed.data })
+    .insert({ ...parsed.data, user_id: user.id, color })
     .select("id")
     .single();
 

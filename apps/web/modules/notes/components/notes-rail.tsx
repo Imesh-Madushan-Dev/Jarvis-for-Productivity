@@ -13,7 +13,7 @@ export function NotesRail({ notes }: { notes: NoteListItem[] }) {
     "recents",
   );
 
-  // ponytail: "Suggested" is oldest-touched-first — notes worth revisiting.
+  // ponytail: "Suggested" is oldest-touched-first - notes worth revisiting.
   // An honest heuristic, not a ranking model. Swap when there's a real signal.
   const ordered = tab === "recents" ? notes : [...notes].reverse();
 

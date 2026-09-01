@@ -5,7 +5,7 @@ const LABEL = "Thinking…";
  * card extends into empty space and reads as broken.
  *
  * data-text duplicates the label because the shimmer's ::before layer masks the
- * gradient onto the same glyphs — keep the two in sync.
+ * gradient onto the same glyphs - keep the two in sync.
  */
 export function PendingTurn() {
   return (

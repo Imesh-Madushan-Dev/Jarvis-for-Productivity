@@ -12,20 +12,20 @@ light + dark.
 - [x] RLS enabled + owner policies on all 5 tables, using `(select auth.uid())`
 - [x] Functions hardened with `set search_path = ''`
 - [x] `handle_new_user` EXECUTE revoked (was RPC-callable by `anon`)
-- [x] **DML granted to `authenticated`** — tables shipped with only
+- [x] **DML granted to `authenticated`** - tables shipped with only
       REFERENCES/TRIGGER/TRUNCATE, so every query failed 42501 regardless of RLS
 - [x] Covering indexes on the `project_id` foreign keys
 - [x] Security advisors: 0 errors
 - [x] Generated TypeScript types checked in
-- [ ] Leaked-password protection — **you must enable this** in the Supabase
+- [ ] Leaked-password protection - **you must enable this** in the Supabase
       dashboard (Auth → Password security); not settable over MCP
 
 ## 2. Infrastructure
 - [x] `.env.local` wired to the project (gitignored, `.env.example` committed)
-- [x] `lib/supabase/{server,client,proxy}.ts` — `@supabase/ssr` getAll/setAll
+- [x] `lib/supabase/{server,client,proxy}.ts` - `@supabase/ssr` getAll/setAll
 - [x] `proxy.ts` refreshes the session + optimistic route guard
 - [x] Email/password auth + login page (no account enumeration in errors)
-- [x] `requireUser()` deduped with React `cache()` — 5 panels, 1 `getUser()`
+- [x] `requireUser()` deduped with React `cache()` - 5 panels, 1 `getUser()`
 - [x] `connection()` inside `requireUser` so the prerenderer tolerates
       supabase-js's internal `Date.now()`
 - [x] Light **and** dark theme via next-themes, no flash
@@ -37,7 +37,7 @@ light + dark.
 - [x] `modules/notes` (note cards + scratch pad, one table, `kind` column)
 - [x] `modules/events`
 - [x] `modules/profile`
-- [x] Shared `lib/result.ts` — every action returns `ActionResult`, never a raw
+- [x] Shared `lib/result.ts` - every action returns `ActionResult`, never a raw
       Postgres error
 - [x] `tools.ts` per module wrapping `actions.ts`, reusing the same zod schemas
       the forms validate against
@@ -65,24 +65,24 @@ light + dark.
       the query window; one bounded query per view
 - [x] Calendar date math covered by `lib/day.check.ts` (`bun lib/day.check.ts`),
       passing from UTC+14 to UTC-11
-- [ ] Files / Templates / Notebook / Tags / Shared — no data model yet, so the
+- [ ] Files / Templates / Notebook / Tags / Shared - no data model yet, so the
       nav items render disabled rather than as dead links
 
 ## 4b. Money (income / expense tracker)
 - [x] `categories` + `transactions` tables, RLS owner policies, DML grants,
       indexes on `(user_id, occurred_on)` and the category FK
-- [x] Amounts stored as integer minor units — never floats
+- [x] Amounts stored as integer minor units - never floats
 - [x] `profiles.currency`, editable in Settings, used by every formatter
 - [x] `/finance`: month in the URL (`?month=`), one bounded query per month,
       totals folded in a single pass
 - [x] Add-entry and category management both live in dialogs, not on the page
 - [x] Category management: create, recolour, archive (archived stay on old
       entries but stop being offered)
-- [x] shadcn `Select` for category/kind; colour is chart-only — cards, chips
+- [x] shadcn `Select` for category/kind; colour is chart-only - cards, chips
       and rows stay on neutral surface tokens
 - [x] Optimistic delete with automatic revert; edit via the same dialog form
 - [x] Wallet balance card (`profiles.opening_balance_cents` + the `wallet_net`
-      view, aggregated in Postgres) — editable by hand and by the agent, and
+      view, aggregated in Postgres) - editable by hand and by the agent, and
       never written as a phantom adjusting transaction
 - [x] Income green, spending red on the numbers only; surfaces stay neutral
 - [x] Month switching reuses the Suspense boundary, so the page no longer
@@ -96,13 +96,13 @@ light + dark.
 
 ## 5. Micro-interactions (transitions.dev tokens)
 - [x] Motion token scale in `globals.css`; no component hardcodes a duration
-- [x] `checkbox-check` installed verbatim — box fills, tick stroke-draws
+- [x] `checkbox-check` installed verbatim - box fills, tick stroke-draws
 - [x] `.t-press` on every button (scale on active, tokenised colour fades)
 - [x] `.t-lift` on note cards and calendar events
 - [x] `.t-rise` staggered mount reveal on headings
 - [x] Theme toggle cross-fades sun/moon
 - [x] `prefers-reduced-motion` guard on all of it
-- [ ] `skeleton-reveal` — **deliberately skipped**: its two-layer class-swap
+- [ ] `skeleton-reveal` - **deliberately skipped**: its two-layer class-swap
       model fights Suspense, which replaces DOM instead of toggling classes
 
 ## 6. Egress + web platform
@@ -110,7 +110,7 @@ light + dark.
 - [x] Row limits on every list query
 - [x] `use cache: private` + `cacheLife` on reads (browser-memory; helps soft
       navigation, not cold loads)
-- [x] `invalidate()` = `updateTag` + `refresh` — `refresh` is required because
+- [x] `invalidate()` = `updateTag` + `refresh` - `refresh` is required because
       the private cache lives in the browser
 - [x] localStorage: scratch-pad crash recovery, notes tab, calendar view
 - [x] PWA: manifest, icons, standalone, safe areas, offline retry
@@ -119,7 +119,7 @@ light + dark.
 - [x] Floating bar, fixed bottom-centre, collapses to a pill
 - [x] Chip row + input row matching the reference: history, action chips, a
       right-aligned create chip, model picker, attach, mic/send/stop
-- [x] Model picker is a `DropdownMenu` radio group — tiers, checkmarks, and a
+- [x] Model picker is a `DropdownMenu` radio group - tiers, checkmarks, and a
       "No key" badge on models whose provider key is missing
 - [x] Tooltips on every icon button; `TooltipProvider` with a 300ms delay
 - [x] Assistant turns collapse behind "Worked for Ns" (live counter while
@@ -131,7 +131,7 @@ light + dark.
       builds context from the profile, today's tasks, today's events and recent
       notes (`lib/ai/context.ts`)
 - [x] **Mutation**: `modules/*/tools.ts` wrap the same actions and the same zod
-      schemas the forms use — createTask, setTaskStatus, listTasks, createNote,
+      schemas the forms use - createTask, setTaskStatus, listTasks, createNote,
       replaceScratchPad, createEvent
 - [x] `ToolLoopAgent` with `stepCountIs(8)` as a runaway guard
 - [x] Model list derived from which provider keys exist; unavailable models
@@ -141,8 +141,13 @@ light + dark.
 - [ ] **No delete tool.** Destructive operations need the approval flow
       (`needsApproval` + `addToolApprovalResponse`), and shipping deletion
       without it is the wrong order. The agent is told to say so if asked.
-- [ ] Conversation is session-only — no `threads`/`messages` tables yet, so it
-      resets on reload. The history icon in the reference UI is not built.
+- [x] **Conversation history**: `threads` + `messages` tables (RLS owner
+      policies, DML grants). The chat route upserts the whole conversation in
+      `onEnd`, so a thread is always exactly what the client holds. Parts are
+      stored as the SDK's own `UIMessage` parts - no lossy `content` column
+- [x] Full-screen mode: the dock grows into a centred window with a chat
+      history rail (open, delete, new chat); `interpolate-size` makes the
+      auto→fixed height a real transition
 - [x] **One card**: panel and composer are a single surface that grows via
       `grid-template-rows: 0fr -> 1fr`; the rainbow ring wraps the whole thing
 - [x] Pending state: shimmering "Thinking..." fills the gap between send and
@@ -163,4 +168,4 @@ light + dark.
 - [x] Optimistic toggle with automatic revert on failure
 - [x] No secrets in source
 - [x] `tsc --noEmit` clean
-- [ ] `bun run build` — **not run this round at your request**
+- [ ] `bun run build` - **not run this round at your request**

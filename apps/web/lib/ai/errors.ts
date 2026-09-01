@@ -51,7 +51,7 @@ const COPY: Record<AssistantErrorCode, AssistantErrorCopy> = {
   },
   unknown: {
     title: "The assistant stopped unexpectedly",
-    detail: "Nothing was lost — try that again.",
+    detail: "Nothing was lost - try that again.",
     retryable: true,
   },
 };
@@ -70,7 +70,7 @@ function parseCode(message: string): AssistantErrorCode {
       return code as AssistantErrorCode;
     }
   } catch {
-    // Not JSON — fall through.
+    // Not JSON - fall through.
   }
   return "unknown";
 }

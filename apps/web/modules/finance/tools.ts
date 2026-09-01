@@ -22,7 +22,7 @@ export function financeTools(userId: string) {
   return {
     createTransaction: tool({
       description:
-        "Record income or an expense. amount is in major units ('12.50'), occurredOn is YYYY-MM-DD — default to the user's today. categoryId must be one of the category ids in context; omit it if nothing fits.",
+        "Record income or an expense. amount is in major units ('12.50'), occurredOn is YYYY-MM-DD - default to the user's today. categoryId must be one of the category ids in context; omit it if nothing fits.",
       inputSchema: createTransactionSchema,
       execute: async (input) => {
         const result = await createTransaction(input);
@@ -34,7 +34,7 @@ export function financeTools(userId: string) {
 
     updateTransaction: tool({
       description:
-        "Change an existing entry. Every field is required — send the current value for anything the user did not ask to change. Entry ids come from monthlyMoneySummary.",
+        "Change an existing entry. Every field is required - send the current value for anything the user did not ask to change. Entry ids come from monthlyMoneySummary.",
       inputSchema: updateTransactionSchema,
       execute: async (input) => {
         const result = await updateTransaction(input);
@@ -58,7 +58,7 @@ export function financeTools(userId: string) {
 
     createCategory: tool({
       description:
-        "Create a spending or income category. Only when no existing category fits — the current ones are in context.",
+        "Create a spending or income category. Only when no existing category fits - the current ones are in context.",
       inputSchema: createCategorySchema,
       execute: async (input) => {
         const result = await createCategory(input);

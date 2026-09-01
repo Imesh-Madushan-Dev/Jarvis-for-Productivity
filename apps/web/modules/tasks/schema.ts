@@ -4,7 +4,7 @@ import type { Database } from "@/lib/supabase/database.types";
 
 export type TaskStatus = Database["public"]["Enums"]["task_status"];
 
-/** Only the columns the dashboard renders — every extra column is egress. */
+/** Only the columns the dashboard renders - every extra column is egress. */
 export const TASK_COLUMNS =
   "id,title,status,planned_date,planned_minutes,position,project_id,completed_at" as const;
 

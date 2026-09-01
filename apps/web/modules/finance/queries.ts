@@ -82,7 +82,7 @@ export async function getWalletBalance(userId: string): Promise<number> {
 
 /**
  * Totals are folded in one pass over the rows we already fetched rather than
- * asking Postgres for a second aggregate query — the month is bounded, so the
+ * asking Postgres for a second aggregate query - the month is bounded, so the
  * rows are in memory anyway.
  */
 export function summarize(transactions: TransactionListItem[]) {

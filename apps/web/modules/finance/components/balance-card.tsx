@@ -20,7 +20,7 @@ import { formatMoney } from "../schema";
 
 /**
  * What the wallet holds right now: everything recorded, plus whatever was
- * there before the first entry. Correcting it writes that opening figure —
+ * there before the first entry. Correcting it writes that opening figure -
  * no phantom "adjustment" transaction ever appears in the list.
  */
 export function BalanceCard({

@@ -6,6 +6,7 @@ import { buildAwareness } from "@/lib/ai/context";
 import type { AssistantErrorCode } from "@/lib/ai/errors";
 import { defaultModelId, resolveModelIdOrDefault } from "@/lib/ai/models";
 import { createClient } from "@/lib/supabase/server";
+import { saveThread } from "@/modules/assistant/queries";
 
 // No `runtime` export: Cache Components rejects the route segment config, and
 // Node is the default for route handlers anyway. Tool loops plus provider
@@ -14,6 +15,7 @@ export const maxDuration = 60;
 
 const bodySchema = z.object({
   messages: z.array(z.unknown()),
+  threadId: z.uuid(),
   modelId: z.string().optional(),
   pathname: z.string().default("/"),
 });
@@ -59,6 +61,20 @@ export async function POST(request: Request) {
         awareness: awareness.text,
       }),
       uiMessages: parsed.data.messages,
+      // `messages` is the whole conversation including the response, so the
+      // thread is persisted in one upsert. A failure here must not break the
+      // reply the user is already reading.
+      onEnd: async ({ messages }) => {
+        try {
+          await saveThread({
+            userId: user.id,
+            threadId: parsed.data.threadId,
+            messages,
+          });
+        } catch (error) {
+          console.error("[assistant] could not save thread", error);
+        }
+      },
       // Returns the message the client receives, so a mid-stream failure gets
       // the same coded shape as the pre-stream ones above rather than the
       // SDK's opaque default. The real error stays in the server log.

@@ -31,7 +31,7 @@ type ModelDef = {
  * it here and nowhere else.
  *
  * Gemini ids verified against ai.google.dev/gemini-api/docs/models.
- * The OpenAI id is NOT verified — confirm before relying on it.
+ * The OpenAI id is NOT verified - confirm before relying on it.
  *
  * A model is offered in the UI only when its provider key is in the
  * environment; no point listing something that cannot run.

@@ -7,11 +7,11 @@ import { TASK_COLUMNS, type TaskListItem } from "./schema";
  * Caller resolves the user first (see requireUser) and passes the id in, so the
  * auth redirect never happens inside a cached scope.
  *
- * ponytail: 'use cache: private' is browser-memory only — it saves egress on
+ * ponytail: 'use cache: private' is browser-memory only - it saves egress on
  * soft navigation, not on cold loads. The narrow column list and row limit are
  * what actually cut bandwidth. If server-side egress ever bites, the upgrade is
  * a shared `use cache` keyed by userId, which needs a service-role client and
- * gives up RLS as the backstop — deliberately not doing that yet.
+ * gives up RLS as the backstop - deliberately not doing that yet.
  */
 export async function listTasksForDay(
   userId: string,

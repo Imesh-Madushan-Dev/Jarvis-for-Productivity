@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Moly — Personal AI Assistant",
+    name: "Moly - Personal AI Assistant",
     short_name: "Moly",
     description:
       "Agentic daily planner: tasks, calendar, and an assistant that runs them.",

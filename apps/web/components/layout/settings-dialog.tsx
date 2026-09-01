@@ -16,7 +16,7 @@ const SettingsDialogContext = createContext<(() => void) | null>(null);
  * Settings opens over whatever page you're on instead of navigating to one.
  *
  * The panels are rendered on the server once, in the dashboard layout, and
- * handed here as a prop — so opening the dialog costs no request, and the
+ * handed here as a prop - so opening the dialog costs no request, and the
  * `/settings` route still works as a deep link for anyone who lands on it.
  */
 export function SettingsDialogProvider({

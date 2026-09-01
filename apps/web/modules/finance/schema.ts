@@ -4,7 +4,7 @@ import type { Database } from "@/lib/supabase/database.types";
 
 export type MoneyKind = Database["public"]["Enums"]["money_kind"];
 
-export const CATEGORY_COLUMNS = "id,name,kind,color,archived" as const;
+export const CATEGORY_COLUMNS = "id,name,kind,color,icon,archived" as const;
 export const TRANSACTION_COLUMNS =
   "id,kind,amount_cents,occurred_on,note,category_id" as const;
 
@@ -12,7 +12,9 @@ export type Category = {
   id: string;
   name: string;
   kind: MoneyKind;
-  color: PastelColor;
+  /** #RRGGBB. Used as an inline style — Tailwind cannot build classes from data. */
+  color: string;
+  icon: string;
   archived: boolean;
 };
 
@@ -26,26 +28,51 @@ export type TransactionListItem = {
 };
 
 /**
- * Category colours. Chart-only by design: bars and legend dots. Cards, chips
- * and rows stay on the neutral surface tokens, so colour always means data.
- * The DB stores the key, so re-theming never needs a data migration; class
- * strings are literal so Tailwind can see them.
+ * Every category gets its own accent, so a seven-key palette was never going
+ * to be enough — the colour is a hex value chosen from this list (or typed by
+ * hand) and painted inline. Chosen to stay legible as a dot or a bar on both
+ * themes; text never sits on them.
  */
-export const PASTEL_BAR = {
-  rose: "bg-rose-300 dark:bg-rose-400/70",
-  peach: "bg-orange-300 dark:bg-orange-400/70",
-  amber: "bg-amber-300 dark:bg-amber-400/70",
-  mint: "bg-emerald-300 dark:bg-emerald-400/70",
-  sky: "bg-sky-300 dark:bg-sky-400/70",
-  lilac: "bg-violet-300 dark:bg-violet-400/70",
-  sand: "bg-stone-300 dark:bg-stone-400/70",
-} as const;
+export const CATEGORY_PALETTE = [
+  "#E06C75",
+  "#E8875A",
+  "#E3B341",
+  "#7FB069",
+  "#2F8F5B",
+  "#3FA796",
+  "#4C9BE8",
+  "#6E7BF2",
+  "#9C6ADE",
+  "#D473C4",
+  "#C2544D",
+  "#B5836B",
+  "#8B94A8",
+  "#D9A441",
+] as const;
 
-export type PastelColor = keyof typeof PASTEL_BAR;
-export const PASTEL_COLORS = Object.keys(PASTEL_BAR) as PastelColor[];
+/** Falls back rather than rendering a broken style if the value is odd. */
+export function categoryColor(color: string | undefined) {
+  return color && /^#[0-9A-Fa-f]{6}$/.test(color) ? color : "#8B94A8";
+}
+
+/**
+ * The first palette colour nobody is using yet, so a new category never
+ * arrives wearing an existing one. Falls back to rotating once all are taken.
+ */
+export function nextFreeColor(used: string[]) {
+  const taken = new Set(used.map((value) => value.toUpperCase()));
+  return (
+    CATEGORY_PALETTE.find((colour) => !taken.has(colour)) ??
+    CATEGORY_PALETTE[used.length % CATEGORY_PALETTE.length]
+  );
+}
 
 export const moneyKind = z.enum(["income", "expense"]);
-const pastel = z.enum(PASTEL_COLORS as [PastelColor, ...PastelColor[]]);
+const hexColor = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^#[0-9A-F]{6}$/, "Pick a colour.");
 
 /**
  * Amounts arrive as a decimal string or number ("12.50") and are stored as
@@ -90,7 +117,7 @@ export type UpdateTransactionInput = z.input<typeof updateTransactionSchema>;
 export const deleteTransactionSchema = z.object({ id: z.uuid() });
 
 /**
- * A balance, unlike a transaction, may legitimately be zero or negative — so
+ * A balance, unlike a transaction, may legitimately be zero or negative - so
  * it gets its own parser rather than loosening the amount one.
  */
 export const setWalletBalanceSchema = z.object({
@@ -109,14 +136,17 @@ export type SetWalletBalanceInput = z.input<typeof setWalletBalanceSchema>;
 export const createCategorySchema = z.object({
   name: z.string().trim().min(1, "Give the category a name.").max(60),
   kind: moneyKind,
-  color: pastel.default("mint"),
+  /** Omitted means "pick one nobody is using" — see `nextFreeColor`. */
+  color: hexColor.optional(),
+  icon: z.string().trim().max(12).default(""),
 });
 export type CreateCategoryInput = z.input<typeof createCategorySchema>;
 
 export const updateCategorySchema = z.object({
   id: z.uuid(),
   name: z.string().trim().min(1).max(60).optional(),
-  color: pastel.optional(),
+  color: hexColor.optional(),
+  icon: z.string().trim().max(12).optional(),
   archived: z.boolean().optional(),
 });
 
@@ -133,7 +163,7 @@ export function formatMoney(cents: number, currency: string) {
 
 /**
  * Month math on the YYYY-MM string itself. `occurred_on` is a DATE column, not
- * an instant, so none of this needs a timezone — the day the user typed is the
+ * an instant, so none of this needs a timezone - the day the user typed is the
  * day that is stored.
  */
 export function shiftMonth(month: string, delta: number) {

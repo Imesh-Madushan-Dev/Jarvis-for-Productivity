@@ -29,7 +29,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { signOut } from "@/lib/auth-actions";
 import { useOpenSettings } from "./settings-dialog";
 
-// Mirrors the sidebar's `ready: true` items — anything not built stays out of
+// Mirrors the sidebar's `ready: true` items - anything not built stays out of
 // the palette too.
 const DESTINATIONS = [
   { label: "Overview", href: "/", icon: DashboardSquare01Icon },
@@ -83,7 +83,7 @@ export function QuickSearch() {
         description="Jump to a page or run a command"
       >
         {/* ponytail: commands only. Searching note and task *content* needs a
-            real index — add it when there is enough content to lose. */}
+            real index - add it when there is enough content to lose. */}
         <CommandInput placeholder="Type a command…" />
         <CommandList>
           <CommandEmpty>Nothing matches that.</CommandEmpty>

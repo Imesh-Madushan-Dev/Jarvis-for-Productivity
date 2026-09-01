@@ -7,7 +7,7 @@ import {
 
 /**
  * Every settings section, in rail order. `id` is the `?tab=` value, so it is
- * part of the URL contract — the sidebar and any deep link aim at these.
+ * part of the URL contract - the sidebar and any deep link aim at these.
  */
 export type SectionId = "general" | "appearance" | "account";
 
@@ -45,7 +45,7 @@ export const SECTIONS: Section[] = [
 
 export const DEFAULT_SECTION: SectionId = "general";
 
-/** Guards `?tab=` before it indexes anything — an unknown value opens General. */
+/** Guards `?tab=` before it indexes anything - an unknown value opens General. */
 export function toSectionId(value: string | undefined): SectionId {
   return SECTIONS.some((s) => s.id === value) ? (value as SectionId) : DEFAULT_SECTION;
 }

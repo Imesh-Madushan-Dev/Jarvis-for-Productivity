@@ -13,7 +13,7 @@ export function OfflineIndicator() {
       className="fixed inset-x-0 bottom-safe-b z-50 flex justify-center pb-4"
     >
       <p className="rounded-full border border-border bg-card px-4 py-2 text-sm text-card-foreground shadow-lg">
-        Offline — your changes will send when you reconnect
+        Offline - your changes will send when you reconnect
       </p>
     </div>
   );

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { fail, ok, type ActionResult } from "@/lib/result";
 
-/** POST-only by virtue of being an action — a GET route would let any
+/** POST-only by virtue of being an action - a GET route would let any
  *  prefetcher or link scanner sign the user out. */
 export async function signOut() {
   const supabase = await createClient();

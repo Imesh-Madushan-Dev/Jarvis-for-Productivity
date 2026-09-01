@@ -15,7 +15,7 @@ const PAGE_NAMES: Record<string, string> = {
  * they are, what is already on today's plan, and which page they're looking at.
  *
  * Queried directly rather than through modules/
- * /queries.ts — those carry
+ * /queries.ts - those carry
  * `use cache: private`, which is a render-time directive and has no meaning in
  * a route handler. These are also deliberately smaller reads.
  */
@@ -92,8 +92,7 @@ export async function buildAwareness(userId: string, pathname: string) {
     `Today's tasks (${tasks.data?.length ?? 0}):`,
     ...(tasks.data ?? []).map(
       (task) =>
-        `  - [${task.status}] ${task.title}${
-          task.planned_minutes ? ` (${task.planned_minutes}m)` : ""
+        `  - [${task.status}] ${task.title}${task.planned_minutes ? ` (${task.planned_minutes}m)` : ""
         } · id ${task.id}`,
     ),
     "",

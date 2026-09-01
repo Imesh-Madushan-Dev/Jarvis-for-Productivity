@@ -7,7 +7,7 @@ import { refresh, updateTag } from "next/cache";
  * no reach into that. Skip it and a mutation looks like it silently reverted.
  *
  * Both are Server-Action-only. The agent calls the same actions from a route
- * handler, where they throw — so failure is swallowed and the assistant panel
+ * handler, where they throw - so failure is swallowed and the assistant panel
  * calls router.refresh() once its stream ends instead.
  */
 export function invalidate(tag: string) {

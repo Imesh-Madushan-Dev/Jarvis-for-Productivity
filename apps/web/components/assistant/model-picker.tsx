@@ -75,7 +75,7 @@ export function ModelPicker({
                       className="size-3.5 shrink-0 text-muted-foreground"
                     />
                     <span className="flex-1 truncate">{model.label}</span>
-                    {/* An unusable model is shown, not hidden — knowing it
+                    {/* An unusable model is shown, not hidden - knowing it
                         exists is the point of the "add a key" nudge. */}
                     {model.available ? null : (
                       <Badge variant="secondary" className="text-[0.65rem]">

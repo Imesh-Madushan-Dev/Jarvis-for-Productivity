@@ -56,7 +56,7 @@ assert.ok(kolkata.start < range.start, "positive offset shifts the window back")
 assert.equal(dayOfInstant("2026-08-30T19:00:00Z", "UTC"), "2026-08-30");
 assert.equal(dayOfInstant("2026-08-30T19:00:00Z", "Asia/Kolkata"), "2026-08-31");
 
-// todayInZone and dayOfInstant must agree — grids bucket with one, key on the other.
+// todayInZone and dayOfInstant must agree - grids bucket with one, key on the other.
 const instant = new Date("2026-08-30T19:00:00Z");
 assert.equal(
   dayOfInstant(instant.toISOString(), "Asia/Kolkata"),

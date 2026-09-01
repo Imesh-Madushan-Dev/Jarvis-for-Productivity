@@ -14,7 +14,7 @@ function isPublic(pathname: string) {
 
 /**
  * Refreshes the auth cookie on every request and does an optimistic redirect.
- * This is a convenience layer, not the authorization boundary — RLS and
+ * This is a convenience layer, not the authorization boundary - RLS and
  * requireUser() are. See lib/auth.ts.
  */
 export async function updateSession(request: NextRequest) {

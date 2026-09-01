@@ -59,7 +59,7 @@ export function Row({
   description?: ReactNode;
   /** Set when the control is a single labellable input. */
   htmlFor?: string;
-  /** Below the control — a character count, an error, a warning. */
+  /** Below the control - a character count, an error, a warning. */
   hint?: ReactNode;
   /** Control takes the full width under the label: textareas, tables. */
   stacked?: boolean;

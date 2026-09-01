@@ -10,7 +10,7 @@ import { updateProfile } from "@/modules/profile/actions";
 import { PanelFooter, PanelHeading, Row, RowGroup } from "../rows";
 
 // Intl.supportedValuesOf isn't in every TS lib target, and the browser already
-// has the table — no reason to ship 400 strings in the RSC payload.
+// has the table - no reason to ship 400 strings in the RSC payload.
 function timeZones(): string[] {
   const intl = Intl as unknown as {
     supportedValuesOf?: (key: string) => string[];

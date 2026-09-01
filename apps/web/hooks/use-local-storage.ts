@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 /**
- * Per-device UI state only — never anything the server is the source of truth
+ * Per-device UI state only - never anything the server is the source of truth
  * for. Reads happen after mount so the first client paint matches the server's.
  */
 export function useLocalStorage<T>(key: string, initial: T) {
@@ -26,7 +26,7 @@ export function useLocalStorage<T>(key: string, initial: T) {
       try {
         window.localStorage.setItem(key, JSON.stringify(next));
       } catch {
-        // Storage full or blocked — the in-memory value still works.
+        // Storage full or blocked - the in-memory value still works.
       }
     },
     [key],
