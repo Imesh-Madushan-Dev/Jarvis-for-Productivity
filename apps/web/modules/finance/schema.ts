@@ -120,6 +120,25 @@ export const deleteTransactionSchema = z.object({ id: z.uuid() });
  * A balance, unlike a transaction, may legitimately be zero or negative - so
  * it gets its own parser rather than loosening the amount one.
  */
+/**
+ * The tool-facing shapes carry the amount *unparsed*.
+ *
+ * The AI SDK validates a tool's input against its schema and hands the parsed
+ * output to `execute`, which then calls the same action the form calls — and
+ * the action parses again. With a transforming field that means the transform
+ * runs twice, and "1000" is stored as 10,000,000 cents. Tools therefore
+ * validate the shape but leave the amount as typed.
+ */
+const rawAmount = z.union([z.string().trim().min(1), z.number()]);
+
+export const createTransactionToolSchema = createTransactionSchema.extend({
+  amount: rawAmount,
+});
+
+export const updateTransactionToolSchema = updateTransactionSchema.extend({
+  amount: rawAmount,
+});
+
 export const setWalletBalanceSchema = z.object({
   balance: z.union([z.string().trim().min(1), z.number()]).transform((value, ctx) => {
     const parsed =
@@ -132,6 +151,8 @@ export const setWalletBalanceSchema = z.object({
   }),
 });
 export type SetWalletBalanceInput = z.input<typeof setWalletBalanceSchema>;
+
+export const setWalletBalanceToolSchema = z.object({ balance: rawAmount });
 
 export const createCategorySchema = z.object({
   name: z.string().trim().min(1, "Give the category a name.").max(60),
@@ -154,10 +175,14 @@ export const updateCategorySchema = z.object({
 export const monthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 
 export function formatMoney(cents: number, currency: string) {
+  // Always two decimals. Dropping them on round numbers makes a large amount
+  // and a hundredth of it look alike at a glance, which is the one mistake a
+  // money column must not make.
   return new Intl.NumberFormat(undefined, {
     style: "currency",
     currency,
-    maximumFractionDigits: cents % 100 === 0 ? 0 : 2,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(cents / 100);
 }
 

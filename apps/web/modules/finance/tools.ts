@@ -10,9 +10,9 @@ import {
 } from "./actions";
 import {
   createCategorySchema,
-  createTransactionSchema,
-  setWalletBalanceSchema,
-  updateTransactionSchema,
+  createTransactionToolSchema,
+  setWalletBalanceToolSchema,
+  updateTransactionToolSchema,
   monthBounds,
   monthSchema,
   TRANSACTION_COLUMNS,
@@ -23,7 +23,7 @@ export function financeTools(userId: string) {
     createTransaction: tool({
       description:
         "Record income or an expense. amount is in major units ('12.50'), occurredOn is YYYY-MM-DD - default to the user's today. categoryId must be one of the category ids in context; omit it if nothing fits.",
-      inputSchema: createTransactionSchema,
+      inputSchema: createTransactionToolSchema,
       execute: async (input) => {
         const result = await createTransaction(input);
         return result.ok
@@ -35,7 +35,7 @@ export function financeTools(userId: string) {
     updateTransaction: tool({
       description:
         "Change an existing entry. Every field is required - send the current value for anything the user did not ask to change. Entry ids come from monthlyMoneySummary.",
-      inputSchema: updateTransactionSchema,
+      inputSchema: updateTransactionToolSchema,
       execute: async (input) => {
         const result = await updateTransaction(input);
         return result.ok
@@ -47,7 +47,7 @@ export function financeTools(userId: string) {
     setWalletBalance: tool({
       description:
         "Set what the wallet actually holds right now, in major units. Use when the user states their balance ('I have 5000 left'); it adjusts the opening balance and never invents a transaction.",
-      inputSchema: setWalletBalanceSchema,
+      inputSchema: setWalletBalanceToolSchema,
       execute: async (input) => {
         const result = await setWalletBalance(input);
         return result.ok

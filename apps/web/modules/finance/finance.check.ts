@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 
 import {
   createTransactionSchema,
+  createTransactionToolSchema,
   summarize,
   setWalletBalanceSchema,
   formatMoney,
@@ -41,6 +42,17 @@ for (const bad of ["0", "-5", "abc", ""]) {
     `${JSON.stringify(bad)} must be rejected`,
   );
 }
+
+// --- a tool's input must survive being parsed by the action as well ---------
+// The AI SDK parses tool input, then the action parses it again. If the tool
+// schema converted to cents, that second parse would multiply by 100 twice.
+const fromTool = createTransactionToolSchema.parse({
+  kind: "expense",
+  amount: "1000",
+  occurredOn: "2026-09-01",
+});
+assert.equal(fromTool.amount, "1000", "tool input keeps the amount as typed");
+assert.equal(createTransactionSchema.parse(fromTool).amount, 100000);
 
 // --- a balance, unlike an amount, may be zero or negative -------------------
 const balance = (input: string | number) =>
@@ -79,6 +91,9 @@ assert.equal(summary.byCategory.get("uncategorized"), 7950);
 
 // --- formatting ------------------------------------------------------------
 assert.ok(formatMoney(1250, "USD").includes("12.50"));
-assert.ok(!formatMoney(1200_00, "USD").includes("."), "whole amounts drop cents");
+assert.ok(
+  formatMoney(1200_00, "USD").includes("1,200.00"),
+  "whole amounts still show cents",
+);
 
 console.log("finance math: all checks passed");
