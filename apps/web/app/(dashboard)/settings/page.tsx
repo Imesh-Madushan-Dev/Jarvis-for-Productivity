@@ -27,6 +27,7 @@ async function Panels({ tab }: { tab: string | undefined }) {
               profile.display_name ?? user.email?.split("@")[0] ?? ""
             }
             timezone={profile.timezone}
+            currency={profile.currency}
           />
         ),
         appearance: <AppearanceSection />,

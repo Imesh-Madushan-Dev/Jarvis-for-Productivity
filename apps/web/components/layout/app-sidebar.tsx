@@ -12,6 +12,7 @@ import {
   LayoutTable01Icon,
   Note01Icon,
   Notebook01Icon,
+  PieChart01Icon,
   Settings02Icon,
   Tag01Icon,
   UserGroupIcon,
@@ -47,6 +48,7 @@ const PRIMARY_NAV: NavItem[] = [
   { label: "Notes", href: "/notes", icon: Note01Icon, ready: true },
   { label: "Calendar", href: "/calendar", icon: Calendar03Icon, ready: true },
   { label: "Tasks", href: "/tasks", icon: CheckmarkCircle02Icon, ready: true },
+  { label: "Money", href: "/finance", icon: PieChart01Icon, ready: true },
   { label: "Files", href: "/files", icon: Attachment01Icon, ready: false },
   {
     label: "Templates",

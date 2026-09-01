@@ -6,6 +6,7 @@ const PAGE_NAMES: Record<string, string> = {
   "/notes": "Notes",
   "/calendar": "Calendar",
   "/tasks": "Tasks",
+  "/finance": "Money tracker",
   "/settings": "Settings",
 };
 
@@ -23,7 +24,7 @@ export async function buildAwareness(userId: string, pathname: string) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name,timezone")
+    .select("display_name,timezone,currency")
     .eq("id", userId)
     .maybeSingle();
 
@@ -31,7 +32,9 @@ export async function buildAwareness(userId: string, pathname: string) {
   const day = todayInZone(timezone);
   const { start, end } = zonedDayRange(day, timezone);
 
-  const [tasks, events, notes] = await Promise.all([
+  const monthFrom = `${day.slice(0, 7)}-01`;
+
+  const [tasks, events, notes, categories, money] = await Promise.all([
     supabase
       .from("tasks")
       .select("id,title,status,planned_minutes")
@@ -54,7 +57,27 @@ export async function buildAwareness(userId: string, pathname: string) {
       .eq("kind", "note")
       .order("updated_at", { ascending: false })
       .limit(10),
+    supabase
+      .from("categories")
+      .select("id,name,kind")
+      .eq("user_id", userId)
+      .eq("archived", false)
+      .order("kind")
+      .limit(100),
+    // This month only. The agent has monthlyMoneySummary for anything older.
+    supabase
+      .from("transactions")
+      .select("kind,amount_cents")
+      .eq("user_id", userId)
+      .gte("occurred_on", monthFrom)
+      .limit(500),
   ]);
+
+  const currency = profile?.currency ?? "USD";
+  const totalCents = (kind: string) =>
+    (money.data ?? [])
+      .filter((row) => row.kind === kind)
+      .reduce((sum, row) => sum + row.amount_cents, 0);
 
   const lines = [
     `User: ${profile?.display_name ?? "unknown"} (id ${userId})`,
@@ -77,6 +100,13 @@ export async function buildAwareness(userId: string, pathname: string) {
     `Recent notes (${notes.data?.length ?? 0}):`,
     ...(notes.data ?? []).map(
       (note) => `  - ${note.title || "Untitled"} · id ${note.id}`,
+    ),
+    "",
+    `Currency: ${currency}. Amounts are given in major units.`,
+    `This month so far: income ${(totalCents("income") / 100).toFixed(2)}, expenses ${(totalCents("expense") / 100).toFixed(2)}.`,
+    `Money categories (${categories.data?.length ?? 0}):`,
+    ...(categories.data ?? []).map(
+      (category) => `  - [${category.kind}] ${category.name} · id ${category.id}`,
     ),
   ];
 

@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          archived: boolean
+          color: string
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["money_kind"]
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean
+          color?: string
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["money_kind"]
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived?: boolean
+          color?: string
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["money_kind"]
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount_cents: number
+          category_id: string | null
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["money_kind"]
+          note: string
+          occurred_on: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["money_kind"]
+          note?: string
+          occurred_on: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["money_kind"]
+          note?: string
+          occurred_on?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           all_day: boolean
@@ -112,6 +189,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          currency: string
           display_name: string | null
           id: string
           timezone: string
@@ -120,6 +198,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          currency?: string
           display_name?: string | null
           id: string
           timezone?: string
@@ -128,6 +207,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          currency?: string
           display_name?: string | null
           id?: string
           timezone?: string
@@ -229,6 +309,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      money_kind: "income" | "expense"
       note_kind: "note" | "scratchpad"
       task_status: "todo" | "doing" | "done"
     }
@@ -252,6 +333,7 @@ export type Enums<T extends keyof PublicSchema["Enums"]> =
 export const Constants = {
   public: {
     Enums: {
+      money_kind: ["income", "expense"],
       note_kind: ["note", "scratchpad"],
       task_status: ["todo", "doing", "done"],
     },

@@ -6,6 +6,7 @@ export type Profile = {
   display_name: string | null;
   avatar_url: string | null;
   timezone: string;
+  currency: string;
 };
 
 export async function getProfile(userId: string): Promise<Profile> {
@@ -16,11 +17,18 @@ export async function getProfile(userId: string): Promise<Profile> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("display_name,avatar_url,timezone")
+    .select("display_name,avatar_url,timezone,currency")
     .eq("id", userId)
     .maybeSingle();
 
   if (error) throw error;
 
-  return data ?? { display_name: null, avatar_url: null, timezone: "UTC" };
+  return (
+    data ?? {
+      display_name: null,
+      avatar_url: null,
+      timezone: "UTC",
+      currency: "USD",
+    }
+  );
 }

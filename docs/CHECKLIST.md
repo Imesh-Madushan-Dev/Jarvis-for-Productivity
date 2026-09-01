@@ -68,6 +68,27 @@ light + dark.
 - [ ] Files / Templates / Notebook / Tags / Shared — no data model yet, so the
       nav items render disabled rather than as dead links
 
+## 4b. Money (income / expense tracker)
+- [x] `categories` + `transactions` tables, RLS owner policies, DML grants,
+      indexes on `(user_id, occurred_on)` and the category FK
+- [x] Amounts stored as integer minor units — never floats
+- [x] `profiles.currency`, editable in Settings, used by every formatter
+- [x] `/finance`: month in the URL (`?month=`), one bounded query per month,
+      totals folded in a single pass
+- [x] Add-entry and category management both live in dialogs, not on the page
+- [x] Category management: create, recolour, archive (archived stay on old
+      entries but stop being offered)
+- [x] shadcn `Select` for category/kind; colour is chart-only — cards, chips
+      and rows stay on neutral surface tokens
+- [x] Optimistic delete with automatic revert
+- [x] Agent tools: `createTransaction`, `createCategory`, `monthlyMoneySummary`;
+      categories, currency and month-to-date totals are in `buildAwareness`
+- [x] Money math covered by `modules/finance/finance.check.ts`
+      (`bun modules/finance/finance.check.ts`)
+- [ ] No editing an existing entry — delete and re-add. Add an update action if
+      that gets annoying.
+- [ ] No budgets or recurring entries yet
+
 ## 5. Micro-interactions (transitions.dev tokens)
 - [x] Motion token scale in `globals.css`; no component hardcodes a duration
 - [x] `checkbox-check` installed verbatim — box fills, tick stroke-draws

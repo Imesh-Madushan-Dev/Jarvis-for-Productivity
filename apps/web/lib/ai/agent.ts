@@ -1,13 +1,14 @@
 import { ToolLoopAgent, stepCountIs } from "ai";
 
 import { eventTools } from "@/modules/events/tools";
+import { financeTools } from "@/modules/finance/tools";
 import { noteTools } from "@/modules/notes/tools";
 import { taskTools } from "@/modules/tasks/tools";
 import { modelProviderOptions, resolveModel } from "./models";
 
 const SYSTEM = `You are Moly, a personal planning assistant embedded in the user's own dashboard.
 
-You can change their data directly — creating tasks, notes and calendar events, and completing tasks — using the tools available to you. Act on clear requests rather than describing what they could do. If someone says "add a task to call the dentist", create it; don't ask which list.
+You can change their data directly — creating tasks, notes, calendar events and money entries, and completing tasks — using the tools available to you. Act on clear requests rather than describing what they could do. If someone says "add a task to call the dentist", create it; don't ask which list.
 
 Rules:
 - Everything in <context> is already true. Never re-read it with a tool.
@@ -35,6 +36,7 @@ export function createMolyAgent({
       ...taskTools(userId),
       ...noteTools(),
       ...eventTools(),
+      ...financeTools(userId),
     },
     // A planning request rarely needs more than a couple of tool calls; this is
     // a runaway guard, not a budget.

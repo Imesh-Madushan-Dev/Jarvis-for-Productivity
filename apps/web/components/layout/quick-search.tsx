@@ -11,6 +11,7 @@ import {
   LogoutSquare01Icon,
   Moon02Icon,
   Note01Icon,
+  PieChart01Icon,
   Search01Icon,
   Settings02Icon,
   Sun03Icon,
@@ -34,6 +35,7 @@ const DESTINATIONS = [
   { label: "Notes", href: "/notes", icon: Note01Icon },
   { label: "Calendar", href: "/calendar", icon: Calendar03Icon },
   { label: "Tasks", href: "/tasks", icon: CheckmarkCircle02Icon },
+  { label: "Money", href: "/finance", icon: PieChart01Icon },
   { label: "Settings", href: "/settings", icon: Settings02Icon },
 ];
 

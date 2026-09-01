@@ -30,15 +30,20 @@ function deviceZone(): string {
   }
 }
 
+const CURRENCIES = ["USD", "EUR", "GBP", "LKR", "INR", "AUD", "CAD", "JPY"];
+
 export function GeneralSection({
   displayName: initialName,
   timezone: initialZone,
+  currency: initialCurrency,
 }: {
   displayName: string;
   timezone: string;
+  currency: string;
 }) {
   const [displayName, setDisplayName] = useState(initialName);
   const [timezone, setTimezone] = useState(initialZone);
+  const [currency, setCurrency] = useState(initialCurrency);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -60,7 +65,7 @@ export function GeneralSection({
     setStatus(null);
 
     startTransition(async () => {
-      const result = await updateProfile({ displayName, timezone });
+      const result = await updateProfile({ displayName, timezone, currency });
       if (result.ok) setStatus("Saved.");
       else setError(result.error);
     });
@@ -113,6 +118,27 @@ export function GeneralSection({
             {options.map((zone) => (
               <NativeSelectOption key={zone} value={zone}>
                 {zone}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        </Row>
+        <Row
+          label="Currency"
+          description="How money is formatted across the tracker."
+          htmlFor="settings-currency"
+        >
+          <NativeSelect
+            id="settings-currency"
+            className="w-full"
+            value={currency}
+            onChange={(event) => setCurrency(event.target.value)}
+          >
+            {(CURRENCIES.includes(currency)
+              ? CURRENCIES
+              : [currency, ...CURRENCIES]
+            ).map((code) => (
+              <NativeSelectOption key={code} value={code}>
+                {code}
               </NativeSelectOption>
             ))}
           </NativeSelect>

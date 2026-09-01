@@ -21,6 +21,23 @@ const updateProfileSchema = z.object({
     },
     { message: "That isn't a timezone we recognise." },
   ),
+  // ISO 4217 is always three letters; Intl rejects anything it cannot format.
+  currency: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .length(3, "Use a three-letter currency code.")
+    .refine(
+      (value) => {
+        try {
+          new Intl.NumberFormat("en-US", { style: "currency", currency: value });
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      { message: "That isn't a currency code we recognise." },
+    ),
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
@@ -41,6 +58,7 @@ export async function updateProfile(
     .update({
       display_name: parsed.data.displayName,
       timezone: parsed.data.timezone,
+      currency: parsed.data.currency,
     })
     .eq("id", user.id);
 
@@ -50,5 +68,6 @@ export async function updateProfile(
   invalidate(`profile:${user.id}`);
   invalidate(`tasks:${user.id}`);
   invalidate(`events:${user.id}`);
+  invalidate(`transactions:${user.id}`);
   return ok();
 }
