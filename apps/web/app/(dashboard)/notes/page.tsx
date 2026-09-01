@@ -1,38 +1,25 @@
 import { Suspense } from "react";
 
 import { PageShell } from "@/components/layout/page-shell";
-import { QuickCreateDialog } from "@/components/layout/quick-create-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
-import { todayInZone } from "@/lib/day";
-import { NotesGrid } from "@/modules/notes/components/notes-grid";
+import { NotesBoard } from "@/modules/notes/components/notes-board";
 import { listRecentNotes } from "@/modules/notes/queries";
-import { getProfile } from "@/modules/profile/queries";
 
 export const metadata = { title: "Notes" };
 
 async function AllNotes() {
   const user = await requireUser();
-  return <NotesGrid notes={await listRecentNotes(user.id, 60)} />;
-}
-
-async function NewNoteButton() {
-  const user = await requireUser();
-  const profile = await getProfile(user.id);
-  return <QuickCreateDialog kind="note" day={todayInZone(profile.timezone)} />;
+  // One client owner below here: it holds the optimistic list, so a new note
+  // appears the moment it is submitted rather than a round trip later.
+  return <NotesBoard notes={await listRecentNotes(user.id, 60)} />;
 }
 
 export default function NotesPage() {
   return (
-    <PageShell
-      title="Notes"
-      description="Most recently edited first."
-      actions={
-        <Suspense fallback={<Skeleton className="h-8 w-24 rounded-md" />}>
-          <NewNoteButton />
-        </Suspense>
-      }
-    >
+    <PageShell title="Notes" description="Most recently edited first.">
+      {/* Card-shaped, not page-shaped: the header above stays put and only the
+          grid that is actually loading is stood in for. */}
       <Suspense
         fallback={
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

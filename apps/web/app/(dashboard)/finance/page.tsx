@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 
 import { PageShell } from "@/components/layout/page-shell";
-import { Skeleton } from "@/components/ui/skeleton";
+import { CardsSkeleton, RowsSkeleton } from "@/components/layout/skeletons";
 import { requireUser } from "@/lib/auth";
 import { todayInZone } from "@/lib/day";
 import { MoneyBoard } from "@/modules/finance/components/money-board";
@@ -61,7 +61,16 @@ export default async function FinancePage({
       {/* No `key`: reusing the boundary keeps the current month on screen
           while the next one loads, instead of flashing a full-page skeleton
           on every arrow click. */}
-      <Suspense fallback={<Skeleton className="h-96 w-full rounded-2xl" />}>
+      <Suspense
+        fallback={
+          <div className="flex flex-col gap-5">
+            <CardsSkeleton />
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <RowsSkeleton />
+            </div>
+          </div>
+        }
+      >
         <FinanceBody month={active} />
       </Suspense>
     </PageShell>

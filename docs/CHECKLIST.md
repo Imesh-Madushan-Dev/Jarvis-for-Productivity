@@ -171,6 +171,15 @@ light + dark.
 - [x] `requireUser` verifies the JWT with `getClaims()` instead of a network
       `getUser()` on every render
 - [x] `set_wallet_balance` RPC — one statement instead of read-then-write
+- [x] Notes: `NotesBoard` owns the optimistic list; the new-note dialog closes
+      on submit, not on the server's answer
+- [x] Page-header dialogs (task / note / event) close immediately and reopen
+      with what was typed if the write fails
+- [x] Skeletons are panel-shaped, never page-shaped
+      (`components/layout/skeletons.tsx`); page chrome never has one
+- [x] Tool schemas carry raw values so a transforming zod field is never
+      applied twice (this stored agent amounts 100x too large)
+- [x] House rules written down in `AGENTS.md`
 - [x] No secrets in source
 - [x] `tsc --noEmit` clean
 - [ ] `bun run build` - **not run this round at your request**

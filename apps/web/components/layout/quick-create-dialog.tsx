@@ -45,16 +45,30 @@ const COPY: Record<Kind, { label: string; icon: typeof Note01Icon; blurb: string
     },
   };
 
+/**
+ * Used from page headers, where there is no local list to patch — so instead
+ * of an optimistic row, the dialog closes the instant you submit and the write
+ * runs behind it. A rejected write reopens the dialog with what you typed and
+ * the reason, which is the only honest way to close early.
+ */
 export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  // What was typed, kept so a rejected write can hand it straight back.
+  const [draft, setDraft] = useState<Record<string, string>>({});
+  const [, startTransition] = useTransition();
   const copy = COPY[kind];
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     setError(null);
+    setOpen(false);
+    setDraft(
+      Object.fromEntries(
+        Array.from(form.entries(), ([key, value]) => [key, String(value)]),
+      ),
+    );
 
     startTransition(async () => {
       const title = String(form.get("title") ?? "").trim();
@@ -78,8 +92,13 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
                 allDay: false,
               });
 
-      if (result.ok) setOpen(false);
-      else setError(result.error);
+      if (result.ok) {
+        // Nothing to hand back; the next open starts empty.
+        setDraft({});
+      } else {
+        setError(result.error);
+        setOpen(true);
+      }
     });
   }
 
@@ -107,6 +126,7 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
               autoFocus
               placeholder="Title"
               aria-label="Title"
+              defaultValue={draft.title ?? ""}
             />
 
             {kind === "note" ? (
@@ -115,6 +135,7 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
                 rows={5}
                 placeholder="Write something…"
                 aria-label="Note body"
+                defaultValue={draft.body ?? ""}
               />
             ) : null}
 
@@ -123,11 +144,21 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
                 {/* Native pickers: correct on every platform, zero bundle. */}
                 <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                   Starts
-                  <Input name="startsAt" type="datetime-local" required />
+                  <Input
+                    name="startsAt"
+                    type="datetime-local"
+                    required
+                    defaultValue={draft.startsAt ?? ""}
+                  />
                 </label>
                 <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                   Ends
-                  <Input name="endsAt" type="datetime-local" required />
+                  <Input
+                    name="endsAt"
+                    type="datetime-local"
+                    required
+                    defaultValue={draft.endsAt ?? ""}
+                  />
                 </label>
               </div>
             ) : null}
@@ -140,8 +171,8 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={pending} className="t-press">
-              {pending ? "Saving…" : "Create"}
+            <Button type="submit" className="t-press">
+              Create
             </Button>
           </DialogFooter>
         </form>

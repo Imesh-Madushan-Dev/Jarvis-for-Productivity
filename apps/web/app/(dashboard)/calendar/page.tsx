@@ -135,7 +135,12 @@ export default async function CalendarPage({
           the previous grid on screen while the new range loads. */}
       <Suspense
         key={active}
-        fallback={<Skeleton className="h-80 w-full rounded-2xl" />}
+        fallback={
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <Skeleton className="h-6 w-40 rounded" />
+            <Skeleton className="mt-4 h-56 w-full rounded-xl" />
+          </div>
+        }
       >
         <CalendarBody view={active} />
       </Suspense>

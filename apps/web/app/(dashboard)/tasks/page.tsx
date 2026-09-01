@@ -2,6 +2,7 @@ import { Suspense } from "react";
 
 import { PageShell } from "@/components/layout/page-shell";
 import { QuickCreateDialog } from "@/components/layout/quick-create-dialog";
+import { RowsSkeleton } from "@/components/layout/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
 import { todayInZone } from "@/lib/day";
@@ -42,7 +43,13 @@ export default function TasksPage() {
         </Suspense>
       }
     >
-      <Suspense fallback={<Skeleton className="h-72 w-full rounded-2xl" />}>
+      <Suspense
+        fallback={
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <RowsSkeleton />
+          </div>
+        }
+      >
         <AllTasks />
       </Suspense>
     </PageShell>
