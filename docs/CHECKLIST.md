@@ -52,6 +52,9 @@ light + dark.
 - [x] Empty states for every panel
 - [x] Responsive; each panel streams in its own Suspense boundary
 - [x] Keyboard: ⌘K / ⌘F quick search
+- [x] Dates are picked with the shadcn Calendar in a Popover
+      (`components/form/date-field.tsx`), not the browser's native control;
+      the value still travels in a hidden input so forms read `FormData`
 - [x] Sidebar functional: ⌘B, rail drag-collapse, always-visible trigger,
       icon-collapse mode, mobile sheet, active-route highlight
 - [x] `/notes`, `/calendar`, `/tasks`, `/settings` built and wired to the nav

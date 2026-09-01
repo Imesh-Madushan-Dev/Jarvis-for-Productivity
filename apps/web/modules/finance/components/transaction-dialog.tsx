@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { DateField } from "@/components/form/date-field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -135,12 +136,10 @@ function TransactionForm({
             aria-label="Amount"
             defaultValue={entry ? (entry.amount_cents / 100).toFixed(2) : ""}
           />
-          {/* Native date input: correct on every platform, zero bundle. */}
-          <Input
+          <DateField
             name="occurredOn"
-            type="date"
             required
-            aria-label="Date"
+            ariaLabel="Date"
             defaultValue={entry?.occurred_on ?? today}
           />
         </div>

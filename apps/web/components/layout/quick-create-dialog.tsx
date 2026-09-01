@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { DateTimeField } from "@/components/form/date-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createEvent } from "@/modules/events/actions";
@@ -80,8 +81,9 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
           ? await createTask({
               title,
               plannedDate: day,
-              // datetime-local has no offset; the browser's own zone is the
-              // right one here because the user is typing a wall clock time.
+              // The picker yields a local wall-clock string with no offset;
+              // the browser's zone is the right one to resolve it in, because
+              // that is the clock the user was reading when they typed it.
               remindAt: remindAt ? new Date(remindAt).toISOString() : null,
             })
           : kind === "note"
@@ -138,14 +140,14 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
             />
 
             {kind === "task" ? (
-              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+              <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                 Remind me (optional)
-                <Input
+                <DateTimeField
                   name="remindAt"
-                  type="datetime-local"
+                  ariaLabel="Reminder"
                   defaultValue={draft.remindAt ?? ""}
                 />
-              </label>
+              </div>
             ) : null}
 
             {kind === "note" ? (
@@ -159,26 +161,25 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
             ) : null}
 
             {kind === "event" ? (
-              <div className="grid grid-cols-2 gap-3">
-                {/* Native pickers: correct on every platform, zero bundle. */}
-                <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                   Starts
-                  <Input
+                  <DateTimeField
                     name="startsAt"
-                    type="datetime-local"
                     required
+                    ariaLabel="Start"
                     defaultValue={draft.startsAt ?? ""}
                   />
-                </label>
-                <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+                </div>
+                <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                   Ends
-                  <Input
+                  <DateTimeField
                     name="endsAt"
-                    type="datetime-local"
                     required
+                    ariaLabel="End"
                     defaultValue={draft.endsAt ?? ""}
                   />
-                </label>
+                </div>
               </div>
             ) : null}
 

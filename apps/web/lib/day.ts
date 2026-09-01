@@ -84,12 +84,12 @@ const WEEK_STARTS_ON = 1; // Monday
  * its components rather than parsed as an instant. Parsing "2026-08-30" gives
  * UTC midnight, which is the day before on any negative-offset server.
  */
-function anchor(day: string): Date {
+export function anchor(day: string): Date {
   const [year, month, date] = day.split("-").map(Number);
   return new Date(year, month - 1, date, 12);
 }
 
-function toDay(date: Date): string {
+export function toDay(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const dayOfMonth = String(date.getDate()).padStart(2, "0");
   return `${date.getFullYear()}-${month}-${dayOfMonth}`;
