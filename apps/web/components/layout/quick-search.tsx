@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/command";
 import { Kbd } from "@/components/ui/kbd";
 import { signOut } from "@/lib/auth-actions";
+import { useOpenSettings } from "./settings-dialog";
 
 // Mirrors the sidebar's `ready: true` items — anything not built stays out of
 // the palette too.
@@ -36,13 +37,13 @@ const DESTINATIONS = [
   { label: "Calendar", href: "/calendar", icon: Calendar03Icon },
   { label: "Tasks", href: "/tasks", icon: CheckmarkCircle02Icon },
   { label: "Money", href: "/finance", icon: PieChart01Icon },
-  { label: "Settings", href: "/settings", icon: Settings02Icon },
 ];
 
 export function QuickSearch() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
+  const openSettings = useOpenSettings();
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -98,6 +99,12 @@ export function QuickSearch() {
             ))}
           </CommandGroup>
           <CommandGroup heading="Preferences">
+            {openSettings ? (
+              <CommandItem onSelect={() => run(openSettings)}>
+                <HugeiconsIcon icon={Settings02Icon} className="size-4" />
+                Settings
+              </CommandItem>
+            ) : null}
             <CommandItem
               onSelect={() =>
                 run(() =>

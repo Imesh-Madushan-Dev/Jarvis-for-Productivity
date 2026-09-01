@@ -32,6 +32,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { QuickSearch } from "./quick-search";
+import { useOpenSettings } from "./settings-dialog";
 import { UserMenu } from "./user-menu";
 
 type NavItem = {
@@ -39,6 +40,8 @@ type NavItem = {
   href: string;
   icon: typeof Note01Icon;
   ready: boolean;
+  /** Opens the settings dialog over the current page instead of navigating. */
+  dialog?: boolean;
 };
 
 // ponytail: `ready: false` items have no data model yet, so they render
@@ -70,18 +73,34 @@ const LIBRARY_NAV: NavItem[] = [
 ];
 
 const FOOTER_NAV: NavItem[] = [
-  { label: "Settings", href: "/settings", icon: Settings02Icon, ready: true },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings02Icon,
+    ready: true,
+    dialog: true,
+  },
   { label: "Help Center", href: "/help", icon: HelpCircleIcon, ready: false },
 ];
 
 function NavList({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
+  const openSettings = useOpenSettings();
 
   return (
     <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.href}>
-          {item.ready ? (
+          {item.dialog && openSettings ? (
+            <SidebarMenuButton
+              onClick={openSettings}
+              tooltip={item.label}
+              className="t-press"
+            >
+              <HugeiconsIcon icon={item.icon} className="size-4" />
+              <span>{item.label}</span>
+            </SidebarMenuButton>
+          ) : item.ready ? (
             <SidebarMenuButton
               render={<Link href={item.href} />}
               isActive={pathname === item.href}

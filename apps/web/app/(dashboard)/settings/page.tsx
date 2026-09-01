@@ -2,41 +2,16 @@ import { Suspense } from "react";
 
 import { PageShell } from "@/components/layout/page-shell";
 import { Skeleton } from "@/components/ui/skeleton";
-import { requireUser } from "@/lib/auth";
-import { getProfile } from "@/modules/profile/queries";
 
-import { AccountSection } from "./sections/account";
-import { AppearanceSection } from "./sections/appearance";
-import { GeneralSection } from "./sections/general";
-import { toSectionId } from "./sections";
-import { SettingsPanels } from "./settings-panels";
+import { SettingsPanelsSlot } from "./panels-slot";
 
 export const metadata = { title: "Settings" };
 
-async function Panels({ tab }: { tab: string | undefined }) {
-  const user = await requireUser();
-  const profile = await getProfile(user.id);
-
-  return (
-    <SettingsPanels
-      initialSection={toSectionId(tab)}
-      panels={{
-        general: (
-          <GeneralSection
-            displayName={
-              profile.display_name ?? user.email?.split("@")[0] ?? ""
-            }
-            timezone={profile.timezone}
-            currency={profile.currency}
-          />
-        ),
-        appearance: <AppearanceSection />,
-        account: <AccountSection email={user.email ?? ""} />,
-      }}
-    />
-  );
-}
-
+/**
+ * Settings normally opens as a dialog over whatever page you're on (see
+ * `components/layout/settings-dialog.tsx`). This route stays for deep links
+ * and bookmarks, rendering the same panels full-page.
+ */
 export default async function SettingsPage({
   searchParams,
 }: {
@@ -47,7 +22,7 @@ export default async function SettingsPage({
   return (
     <PageShell title="Settings" description="Your profile and how days work.">
       <Suspense fallback={<Skeleton className="h-96 rounded-2xl" />}>
-        <Panels tab={tab} />
+        <SettingsPanelsSlot tab={tab} />
       </Suspense>
     </PageShell>
   );

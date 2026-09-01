@@ -21,25 +21,45 @@ const GROUPS = ["Workspace", "Account"] as const;
 export function SettingsPanels({
   initialSection,
   panels,
+  deepLink = true,
+  framed = true,
 }: {
   initialSection: SectionId;
   panels: Record<SectionId, ReactNode>;
+  /** False inside the dialog: the URL belongs to the page underneath. */
+  deepLink?: boolean;
+  /** False inside the dialog, which is already a card — no nested chrome. */
+  framed?: boolean;
 }) {
   const [section, setSection] = useState<SectionId>(initialSection);
 
-  const open = useCallback((next: SectionId) => {
-    setSection(next);
-    window.history.replaceState(null, "", `/settings?tab=${next}`);
-  }, []);
+  const open = useCallback(
+    (next: SectionId) => {
+      setSection(next);
+      if (deepLink) {
+        window.history.replaceState(null, "", `/settings?tab=${next}`);
+      }
+    },
+    [deepLink],
+  );
 
   const active = SECTIONS.find((s) => s.id === section);
 
   return (
-    <div className="grid gap-4 overflow-hidden rounded-2xl border border-border bg-card md:grid-cols-[13.5rem_1fr] md:gap-0">
+    <div
+      className={cn(
+        "grid gap-4 md:grid-cols-[13.5rem_1fr] md:gap-0",
+        framed &&
+          "overflow-hidden rounded-2xl border border-border bg-card",
+      )}
+    >
       {/* Rail. A horizontal strip on phones, a column from md up. */}
       <nav
         aria-label="Settings sections"
-        className="flex gap-3 overflow-x-auto border-b border-border bg-muted/40 p-3 md:flex-col md:gap-4 md:overflow-x-visible md:border-r md:border-b-0"
+        className={cn(
+          "flex gap-3 overflow-x-auto border-b border-border p-3 md:flex-col md:gap-4 md:overflow-x-visible md:border-r md:border-b-0",
+          framed && "bg-muted/40",
+        )}
       >
         {GROUPS.map((group) => {
           const items = SECTIONS.filter((s) => s.group === group);
