@@ -5,37 +5,48 @@ import {
   formatWeekdayShort,
 } from "@/lib/day";
 import { cn } from "@/lib/utils";
-import type { EventListItem } from "../schema";
+import type { CalendarItem } from "../schema";
 
 /** One pass over the result set; cells then read their own bucket. */
-function groupByDay(events: EventListItem[], timeZone: string) {
-  const byDay = new Map<string, EventListItem[]>();
-  for (const event of events) {
-    const day = dayOfInstant(event.starts_at, timeZone);
+function groupByDay(items: CalendarItem[], timeZone: string) {
+  const byDay = new Map<string, CalendarItem[]>();
+  for (const item of items) {
+    const day = dayOfInstant(item.at, timeZone);
     const bucket = byDay.get(day);
-    if (bucket) bucket.push(event);
-    else byDay.set(day, [event]);
+    if (bucket) bucket.push(item);
+    else byDay.set(day, [item]);
   }
   return byDay;
 }
 
-function EventChip({
-  event,
+/** A reminder is dashed and quieter than an event: it is a nudge, not a block. */
+function ItemChip({
+  item,
   timeZone,
   showTime = true,
 }: {
-  event: EventListItem;
+  item: CalendarItem;
   timeZone: string;
   showTime?: boolean;
 }) {
+  const reminder = item.kind === "reminder";
+
   return (
-    <li className="t-lift rounded-md border-l-2 border-brand bg-brand-muted px-2 py-1">
+    <li
+      className={cn(
+        "t-lift rounded-md px-2 py-1",
+        reminder
+          ? "border border-dashed border-brand/60 bg-transparent"
+          : "border-l-2 border-brand bg-brand-muted",
+      )}
+    >
       <p className="truncate text-xs font-medium text-foreground">
-        {event.title}
+        {reminder ? "⏰ " : ""}
+        {item.title}
       </p>
-      {showTime && !event.all_day ? (
+      {showTime && !item.allDay ? (
         <p className="truncate text-[0.7rem] text-muted-foreground">
-          {formatTimeInZone(event.starts_at, timeZone)}
+          {formatTimeInZone(item.at, timeZone)}
         </p>
       ) : null}
     </li>
@@ -44,22 +55,22 @@ function EventChip({
 
 export function WeekGrid({
   days,
-  events,
+  items,
   timeZone,
   today,
 }: {
   days: string[];
-  events: EventListItem[];
+  items: CalendarItem[];
   timeZone: string;
   today: string;
 }) {
-  const byDay = groupByDay(events, timeZone);
+  const byDay = groupByDay(items, timeZone);
 
   return (
     <div className="overflow-x-auto">
       <div className="grid min-w-208 grid-cols-7 gap-2">
         {days.map((day) => {
-          const dayEvents = byDay.get(day) ?? [];
+          const dayItems = byDay.get(day) ?? [];
           const isToday = day === today;
 
           return (
@@ -85,16 +96,12 @@ export function WeekGrid({
                 </span>
               </header>
 
-              {dayEvents.length === 0 ? (
+              {dayItems.length === 0 ? (
                 <p className="mt-3 text-xs text-muted-foreground/60">-</p>
               ) : (
                 <ul className="mt-3 flex flex-col gap-1.5">
-                  {dayEvents.map((event) => (
-                    <EventChip
-                      key={event.id}
-                      event={event}
-                      timeZone={timeZone}
-                    />
+                  {dayItems.map((item) => (
+                    <ItemChip key={item.id} item={item} timeZone={timeZone} />
                   ))}
                 </ul>
               )}
@@ -110,19 +117,19 @@ const MAX_PER_CELL = 2;
 
 export function MonthGrid({
   days,
-  events,
+  items,
   timeZone,
   today,
   month,
 }: {
   days: string[];
-  events: EventListItem[];
+  items: CalendarItem[];
   timeZone: string;
   today: string;
   /** YYYY-MM of the month in focus; other cells are leading/trailing days. */
   month: string;
 }) {
-  const byDay = groupByDay(events, timeZone);
+  const byDay = groupByDay(items, timeZone);
 
   return (
     <div className="overflow-x-auto">
@@ -140,8 +147,8 @@ export function MonthGrid({
 
         <div className="grid grid-cols-7 gap-2">
           {days.map((day) => {
-            const dayEvents = byDay.get(day) ?? [];
-            const overflow = dayEvents.length - MAX_PER_CELL;
+            const dayItems = byDay.get(day) ?? [];
+            const overflow = dayItems.length - MAX_PER_CELL;
             const isToday = day === today;
             const outside = !day.startsWith(month);
 
@@ -166,12 +173,12 @@ export function MonthGrid({
                   {formatDayNumber(day)}
                 </span>
 
-                {dayEvents.length > 0 ? (
+                {dayItems.length > 0 ? (
                   <ul className="mt-1.5 flex flex-col gap-1">
-                    {dayEvents.slice(0, MAX_PER_CELL).map((event) => (
-                      <EventChip
-                        key={event.id}
-                        event={event}
+                    {dayItems.slice(0, MAX_PER_CELL).map((item) => (
+                      <ItemChip
+                        key={item.id}
+                        item={item}
                         timeZone={timeZone}
                         showTime={false}
                       />

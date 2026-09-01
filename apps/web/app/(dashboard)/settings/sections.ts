@@ -1,6 +1,7 @@
 import type { IconSvgElement } from "@hugeicons/react";
 import {
   Settings02Icon,
+  Notification03Icon,
   PaintBoardIcon,
   UserCircleIcon,
 } from "@hugeicons/core-free-icons";
@@ -9,7 +10,7 @@ import {
  * Every settings section, in rail order. `id` is the `?tab=` value, so it is
  * part of the URL contract - the sidebar and any deep link aim at these.
  */
-export type SectionId = "general" | "appearance" | "account";
+export type SectionId = "general" | "appearance" | "notifications" | "account";
 
 export type Section = {
   id: SectionId;
@@ -33,6 +34,13 @@ export const SECTIONS: Section[] = [
     group: "Workspace",
     icon: PaintBoardIcon,
     description: "How the dashboard looks on this device.",
+  },
+  {
+    id: "notifications",
+    label: "Reminders",
+    group: "Workspace",
+    icon: Notification03Icon,
+    description: "Where reminders are delivered.",
   },
   {
     id: "account",

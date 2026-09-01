@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_used_at: string | null
+          p256dh: string
+          user_agent: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+          user_agent?: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+          user_agent?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           created_at: string
@@ -165,6 +198,8 @@ export type Database = {
           id: string
           location: string | null
           project_id: string | null
+          remind_at: string | null
+          reminded_at: string | null
           source: string
           starts_at: string
           title: string
@@ -179,6 +214,8 @@ export type Database = {
           id?: string
           location?: string | null
           project_id?: string | null
+          remind_at?: string | null
+          reminded_at?: string | null
           source?: string
           starts_at: string
           title: string
@@ -193,6 +230,8 @@ export type Database = {
           id?: string
           location?: string | null
           project_id?: string | null
+          remind_at?: string | null
+          reminded_at?: string | null
           source?: string
           starts_at?: string
           title?: string
@@ -322,6 +361,8 @@ export type Database = {
           planned_minutes: number | null
           position: number
           project_id: string | null
+          remind_at: string | null
+          reminded_at: string | null
           status: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at: string
@@ -338,6 +379,8 @@ export type Database = {
           planned_minutes?: number | null
           position?: number
           project_id?: string | null
+          remind_at?: string | null
+          reminded_at?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at?: string
@@ -354,6 +397,8 @@ export type Database = {
           planned_minutes?: number | null
           position?: number
           project_id?: string | null
+          remind_at?: string | null
+          reminded_at?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
           updated_at?: string

@@ -7,12 +7,13 @@ import { todayInZone, zonedDayRange } from "@/lib/day";
 import { DayTimeline } from "@/modules/events/components/day-timeline";
 import { CalendarNav } from "@/modules/events/components/calendar-nav";
 import { listEventsForRange } from "@/modules/events/queries";
+import { toCalendarItems } from "@/modules/events/schema";
 import { NotesRail } from "@/modules/notes/components/notes-rail";
 import { ScratchPad } from "@/modules/notes/components/scratch-pad";
 import { getScratchPad, listRecentNotes } from "@/modules/notes/queries";
 import { getProfile } from "@/modules/profile/queries";
 import { TaskList } from "@/modules/tasks/components/task-list";
-import { listTasksForDay } from "@/modules/tasks/queries";
+import { listRemindersForRange, listTasksForDay } from "@/modules/tasks/queries";
 
 export const metadata = { title: "Overview" };
 
@@ -41,10 +42,14 @@ async function CalendarPanel() {
   const profile = await getProfile(user.id);
   const day = todayInZone(profile.timezone);
   const { start, end } = zonedDayRange(day, profile.timezone);
+  const [events, reminders] = await Promise.all([
+    listEventsForRange(user.id, start, end),
+    listRemindersForRange(user.id, start, end),
+  ]);
 
   return (
     <DayTimeline
-      events={await listEventsForRange(user.id, start, end)}
+      items={toCalendarItems(events, reminders)}
       timeZone={profile.timezone}
       nav={<CalendarNav active="day" />}
     />
@@ -65,7 +70,11 @@ async function TasksPanel() {
         Tasks
       </h2>
       <div className="mt-3">
-        <TaskList tasks={await listTasksForDay(user.id, day)} day={day} />
+        <TaskList
+          tasks={await listTasksForDay(user.id, day)}
+          day={day}
+          timeZone={profile.timezone}
+        />
       </div>
     </section>
   );

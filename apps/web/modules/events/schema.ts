@@ -25,3 +25,50 @@ export const createEventSchema = z
     path: ["endsAt"],
   });
 export type CreateEventInput = z.infer<typeof createEventSchema>;
+
+/**
+ * What the calendar actually draws. An event and a task's reminder are the
+ * same thing to a grid cell — a title at an instant — so they are flattened to
+ * one shape here rather than every view learning about both tables.
+ */
+export type CalendarItem = {
+  id: string;
+  title: string;
+  at: string;
+  kind: "event" | "reminder";
+  allDay: boolean;
+};
+
+export function eventItem(event: EventListItem): CalendarItem {
+  return {
+    id: `event-${event.id}`,
+    title: event.title,
+    at: event.starts_at,
+    kind: "event",
+    allDay: event.all_day,
+  };
+}
+
+export function reminderItem(task: {
+  id: string;
+  title: string;
+  remind_at: string | null;
+}): CalendarItem {
+  return {
+    id: `task-${task.id}`,
+    title: task.title,
+    at: task.remind_at ?? "",
+    kind: "reminder",
+    allDay: false,
+  };
+}
+
+/** Chronological, so a cell renders its day in the order it happens. */
+export function toCalendarItems(
+  events: EventListItem[],
+  reminders: { id: string; title: string; remind_at: string | null }[],
+): CalendarItem[] {
+  return [...events.map(eventItem), ...reminders.map(reminderItem)]
+    .filter((item) => item.at)
+    .sort((a, b) => a.at.localeCompare(b.at));
+}

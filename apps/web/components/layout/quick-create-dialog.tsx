@@ -73,9 +73,17 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
     startTransition(async () => {
       const title = String(form.get("title") ?? "").trim();
 
+      const remindAt = String(form.get("remindAt") ?? "").trim();
+
       const result =
         kind === "task"
-          ? await createTask({ title, plannedDate: day })
+          ? await createTask({
+              title,
+              plannedDate: day,
+              // datetime-local has no offset; the browser's own zone is the
+              // right one here because the user is typing a wall clock time.
+              remindAt: remindAt ? new Date(remindAt).toISOString() : null,
+            })
           : kind === "note"
             ? await createNote({
                 title,
@@ -128,6 +136,17 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
               aria-label="Title"
               defaultValue={draft.title ?? ""}
             />
+
+            {kind === "task" ? (
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+                Remind me (optional)
+                <Input
+                  name="remindAt"
+                  type="datetime-local"
+                  defaultValue={draft.remindAt ?? ""}
+                />
+              </label>
+            ) : null}
 
             {kind === "note" ? (
               <Textarea

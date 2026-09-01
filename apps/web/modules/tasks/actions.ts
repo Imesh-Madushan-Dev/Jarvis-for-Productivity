@@ -8,8 +8,10 @@ import { createClient } from "@/lib/supabase/server";
 import {
   createTaskSchema,
   deleteTaskSchema,
+  setTaskReminderSchema,
   setTaskStatusSchema,
   type CreateTaskInput,
+  type SetTaskReminderInput,
   type SetTaskStatusInput,
 } from "./schema";
 
@@ -32,6 +34,7 @@ export async function createTask(
       planned_date: parsed.data.plannedDate ?? null,
       planned_minutes: parsed.data.plannedMinutes ?? null,
       project_id: parsed.data.projectId ?? null,
+      remind_at: parsed.data.remindAt ?? null,
       // ponytail: append-only ordering. Swap for fractional midpoints between
       // neighbours when drag-to-reorder lands.
       position: Date.now(),
@@ -58,6 +61,31 @@ export async function setTaskStatus(
   const { error } = await supabase
     .from("tasks")
     .update({ status: parsed.data.status })
+    .eq("id", parsed.data.id)
+    .eq("user_id", user.id);
+
+  if (error) return fail(toUserMessage(error));
+
+  invalidate(`tasks:${user.id}`);
+  return ok();
+}
+
+/**
+ * Setting a reminder clears `reminded_at`: moving the time is a new alarm, and
+ * a stale claim stamp would silently swallow it.
+ */
+export async function setTaskReminder(
+  input: SetTaskReminderInput,
+): Promise<ActionResult> {
+  const parsed = setTaskReminderSchema.safeParse(input);
+  if (!parsed.success) return fail("That reminder time isn't valid.");
+
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ remind_at: parsed.data.remindAt, reminded_at: null })
     .eq("id", parsed.data.id)
     .eq("user_id", user.id);
 

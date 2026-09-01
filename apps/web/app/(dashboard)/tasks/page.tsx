@@ -19,7 +19,11 @@ async function AllTasks() {
 
   return (
     <section className="rounded-2xl border border-border bg-card p-5">
-      <TaskList tasks={await listAllTasks(user.id)} day={day} />
+      <TaskList
+        tasks={await listAllTasks(user.id)}
+        day={day}
+        timeZone={profile.timezone}
+      />
     </section>
   );
 }

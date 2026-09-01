@@ -6,7 +6,7 @@ export type TaskStatus = Database["public"]["Enums"]["task_status"];
 
 /** Only the columns the dashboard renders - every extra column is egress. */
 export const TASK_COLUMNS =
-  "id,title,status,planned_date,planned_minutes,position,project_id,completed_at" as const;
+  "id,title,status,planned_date,planned_minutes,position,project_id,completed_at,remind_at" as const;
 
 export type TaskListItem = {
   id: string;
@@ -17,6 +17,8 @@ export type TaskListItem = {
   position: number;
   project_id: string | null;
   completed_at: string | null;
+  /** When to fire a notification for this task. Null means no reminder. */
+  remind_at: string | null;
   projects: { name: string } | null;
 };
 
@@ -25,6 +27,8 @@ export const createTaskSchema = z.object({
   plannedDate: z.iso.date().nullish(),
   plannedMinutes: z.number().int().positive().max(1440).nullish(),
   projectId: z.uuid().nullish(),
+  /** A full ISO instant with an offset — resolved against the user's zone. */
+  remindAt: z.iso.datetime({ offset: true }).nullish(),
 });
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 
@@ -33,5 +37,12 @@ export const setTaskStatusSchema = z.object({
   status: z.enum(["todo", "doing", "done"]),
 });
 export type SetTaskStatusInput = z.infer<typeof setTaskStatusSchema>;
+
+export const setTaskReminderSchema = z.object({
+  id: z.uuid(),
+  /** Null clears the reminder. */
+  remindAt: z.iso.datetime({ offset: true }).nullable(),
+});
+export type SetTaskReminderInput = z.infer<typeof setTaskReminderSchema>;
 
 export const deleteTaskSchema = z.object({ id: z.uuid() });

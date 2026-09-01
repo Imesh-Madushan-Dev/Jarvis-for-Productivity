@@ -2,6 +2,10 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AlarmClockIcon } from "@hugeicons/core-free-icons";
+
+import { formatTimeInZone } from "@/lib/day";
 import { cn } from "@/lib/utils";
 import { setTaskStatus } from "../actions";
 import type { TaskListItem, TaskStatus } from "../schema";
@@ -11,9 +15,12 @@ import { TaskCheckbox } from "./task-checkbox";
 export function TaskList({
   tasks,
   day,
+  timeZone,
 }: {
   tasks: TaskListItem[];
   day: string;
+  /** Reminder times are shown in the profile's zone, like everything else. */
+  timeZone: string;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -77,6 +84,12 @@ export function TaskList({
                   >
                     {task.title}
                   </p>
+                  {task.remind_at ? (
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                      <HugeiconsIcon icon={AlarmClockIcon} className="size-3.5" />
+                      {formatTimeInZone(task.remind_at, timeZone)}
+                    </p>
+                  ) : null}
                   {task.projects?.name ? (
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       from:{" "}
@@ -108,6 +121,7 @@ export function TaskList({
               position: Number.MAX_SAFE_INTEGER,
               project_id: null,
               completed_at: null,
+              remind_at: null,
               projects: null,
             },
           })

@@ -10,6 +10,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
 import { getProfile } from "@/modules/profile/queries";
+import { ReminderSync } from "@/modules/reminders/components/reminder-sync";
 
 import { SettingsPanelsSlot } from "./settings/panels-slot";
 
@@ -80,6 +81,8 @@ export default function DashboardLayout({
         </SidebarInset>
 
         <AssistantSlot />
+        {/* Registers the service worker and nudges the dispatcher while open. */}
+        <ReminderSync />
       </SettingsDialogProvider>
     </SidebarProvider>
   );

@@ -2,8 +2,13 @@ import { tool } from "ai";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
-import { createTask, setTaskStatus } from "./actions";
-import { createTaskSchema, setTaskStatusSchema, TASK_COLUMNS } from "./schema";
+import { createTask, setTaskReminder, setTaskStatus } from "./actions";
+import {
+  createTaskSchema,
+  setTaskReminderSchema,
+  setTaskStatusSchema,
+  TASK_COLUMNS,
+} from "./schema";
 
 /**
  * The tools are deliberately thin: the same zod schema that validates the form
@@ -14,7 +19,7 @@ export function taskTools(userId: string) {
   return {
     createTask: tool({
       description:
-        "Create a task. Use the user's today (given in context) for plannedDate unless they name another day.",
+        "Create a task. Use the user's today (given in context) for plannedDate unless they name another day. Set remindAt when the user asks to be reminded — a full ISO timestamp with the offset of their timezone, which is in context.",
       inputSchema: createTaskSchema,
       execute: async (input) => {
         const result = await createTask(input);
@@ -30,6 +35,18 @@ export function taskTools(userId: string) {
       inputSchema: setTaskStatusSchema,
       execute: async (input) => {
         const result = await setTaskStatus(input);
+        return result.ok
+          ? { updated: true }
+          : { updated: false, error: result.error };
+      },
+    }),
+
+    setTaskReminder: tool({
+      description:
+        "Add, move or clear the reminder on an existing task. remindAt is a full ISO timestamp with the user's offset, or null to remove the reminder.",
+      inputSchema: setTaskReminderSchema,
+      execute: async (input) => {
+        const result = await setTaskReminder(input);
         return result.ok
           ? { updated: true }
           : { updated: false, error: result.error };

@@ -24,7 +24,9 @@ import {
   type CalendarView,
 } from "@/modules/events/components/calendar-nav";
 import { DayTimeline } from "@/modules/events/components/day-timeline";
+import { toCalendarItems } from "@/modules/events/schema";
 import { listEventsForRange } from "@/modules/events/queries";
+import { listRemindersForRange } from "@/modules/tasks/queries";
 import { getProfile } from "@/modules/profile/queries";
 
 export const metadata = { title: "Calendar" };
@@ -44,12 +46,11 @@ async function CalendarBody({ view }: { view: CalendarView }) {
 
   if (view === "day") {
     const { start, end } = zonedDayRange(today, timeZone);
-    const events = await listEventsForRange(
-      user.id,
-      start,
-      end,
-      ROW_LIMIT.day,
-    );
+    // Events and reminders share the window, so they share the round trip.
+    const [events, reminders] = await Promise.all([
+      listEventsForRange(user.id, start, end, ROW_LIMIT.day),
+      listRemindersForRange(user.id, start, end, ROW_LIMIT.day),
+    ]);
 
     return (
       <>
@@ -57,7 +58,7 @@ async function CalendarBody({ view }: { view: CalendarView }) {
           {formatLongDate(today, timeZone)}
         </p>
         <DayTimeline
-          events={events}
+          items={toCalendarItems(events, reminders)}
           timeZone={timeZone}
           nav={<CalendarNav active="day" />}
         />
@@ -67,12 +68,11 @@ async function CalendarBody({ view }: { view: CalendarView }) {
 
   const days = view === "week" ? weekDays(today) : monthDays(today);
   const { start, end } = rangeForDays(days, timeZone);
-  const events = await listEventsForRange(
-    user.id,
-    start,
-    end,
-    ROW_LIMIT[view],
-  );
+  const [events, reminders] = await Promise.all([
+    listEventsForRange(user.id, start, end, ROW_LIMIT[view]),
+    listRemindersForRange(user.id, start, end, ROW_LIMIT[view]),
+  ]);
+  const items = toCalendarItems(events, reminders);
 
   return (
     <section
@@ -90,14 +90,14 @@ async function CalendarBody({ view }: { view: CalendarView }) {
         {view === "week" ? (
           <WeekGrid
             days={days}
-            events={events}
+            items={items}
             timeZone={timeZone}
             today={today}
           />
         ) : (
           <MonthGrid
             days={days}
-            events={events}
+            items={items}
             timeZone={timeZone}
             today={today}
             month={today.slice(0, 7)}

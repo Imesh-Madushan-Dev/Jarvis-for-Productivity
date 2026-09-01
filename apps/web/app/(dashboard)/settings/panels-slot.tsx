@@ -4,6 +4,7 @@ import { getProfile } from "@/modules/profile/queries";
 import { AccountSection } from "./sections/account";
 import { AppearanceSection } from "./sections/appearance";
 import { GeneralSection } from "./sections/general";
+import { NotificationsSection } from "./sections/notifications";
 import { toSectionId } from "./sections";
 import { SettingsPanels } from "./settings-panels";
 
@@ -38,6 +39,11 @@ export async function SettingsPanelsSlot({
           />
         ),
         appearance: <AppearanceSection />,
+        notifications: (
+          <NotificationsSection
+            publicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""}
+          />
+        ),
         account: <AccountSection email={user.email ?? ""} />,
       }}
     />

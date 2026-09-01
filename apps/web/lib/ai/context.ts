@@ -37,7 +37,7 @@ export async function buildAwareness(userId: string, pathname: string) {
   const [tasks, events, notes, categories, money, walletNet] = await Promise.all([
     supabase
       .from("tasks")
-      .select("id,title,status,planned_minutes")
+      .select("id,title,status,planned_minutes,remind_at")
       .eq("user_id", userId)
       .eq("planned_date", day)
       .order("position")

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { formatTimeInZone, zonedHours } from "@/lib/day";
 import { cn } from "@/lib/utils";
-import type { EventListItem } from "../schema";
+import type { CalendarItem } from "../schema";
 
 const START_HOUR = 7;
 const END_HOUR = 21;
@@ -24,11 +24,11 @@ function clamp(value: number, min: number, max: number) {
 }
 
 export function DayTimeline({
-  events,
+  items,
   timeZone,
   nav,
 }: {
-  events: EventListItem[];
+  items: CalendarItem[];
   timeZone: string;
   nav?: React.ReactNode;
 }) {
@@ -98,39 +98,40 @@ export function DayTimeline({
               />
             ) : null}
 
-            {events.length === 0 ? (
+            {items.length === 0 ? (
               <p className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">
                 Nothing scheduled today.
               </p>
             ) : (
-              events.map((event) => {
+              items.map((item) => {
                 const start = clamp(
-                  zonedHours(event.starts_at, timeZone),
+                  zonedHours(item.at, timeZone),
                   START_HOUR,
                   END_HOUR,
                 );
-                const end = clamp(
-                  zonedHours(event.ends_at, timeZone),
-                  start + 0.25,
-                  END_HOUR,
-                );
                 const left = ((start - START_HOUR) / SPAN) * 100;
-                const width = ((end - start) / SPAN) * 100;
+                // A reminder is an instant, not a span, so it gets a fixed
+                // narrow pin instead of a block sized by its duration.
+                const width =
+                  item.kind === "reminder" ? 100 / SPAN : (0.75 / SPAN) * 100;
 
                 return (
                   <article
-                    key={event.id}
+                    key={item.id}
                     style={{ left: `${left}%`, width: `${width}%` }}
                     className={cn(
-                      "t-lift absolute inset-y-2 z-20 overflow-hidden rounded-md",
-                      "border-l-2 border-brand bg-brand-muted px-2 py-1.5",
+                      "t-lift absolute inset-y-2 z-20 overflow-hidden rounded-md px-2 py-1.5",
+                      item.kind === "reminder"
+                        ? "border border-dashed border-brand/60"
+                        : "border-l-2 border-brand bg-brand-muted",
                     )}
                   >
                     <p className="truncate text-xs font-medium text-foreground">
-                      {event.title}
+                      {item.kind === "reminder" ? "⏰ " : ""}
+                      {item.title}
                     </p>
                     <p className="mt-0.5 truncate text-[0.7rem] text-muted-foreground">
-                      {formatTimeInZone(event.starts_at, timeZone)}
+                      {formatTimeInZone(item.at, timeZone)}
                     </p>
                   </article>
                 );

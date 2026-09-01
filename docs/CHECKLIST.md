@@ -94,6 +94,27 @@ light + dark.
       (`bun modules/finance/finance.check.ts`)
 - [ ] No budgets or recurring entries yet
 
+## 4c. Reminders
+- [x] `remind_at` + `reminded_at` on `tasks` and `events` — a reminder is a
+      time on something you already have, not a fifth noun
+- [x] Reminders appear in Tasks (bell + time) and on the calendar (day, week,
+      month) as dashed pins beside events
+- [x] `push_subscriptions` (owner-only RLS), service worker, VAPID keys
+      generated into the gitignored `.env.local`
+- [x] `/api/reminders/dispatch` claims due rows with one UPDATE, so overlapping
+      runs cannot double-send; dead subscriptions are deleted on 404/410
+- [x] Two callers: an open tab (its own user, once a minute, visible only) and
+      the scheduler (service role, gated on `REMINDER_DISPATCH_SECRET`)
+- [x] Settings -> Reminders: per-device enable, and "Send a test" that proves
+      permission, subscription, keys and delivery in one click
+- [x] Agent: `createTask({ remindAt })` and `setTaskReminder`; today's reminder
+      times are in `buildAwareness`
+- [x] `bun modules/events/calendar.check.ts` covers the event/reminder merge
+- [ ] **You must add `SUPABASE_SERVICE_ROLE_KEY`** to `.env.local` and schedule
+      the cron job once the app is deployed - see `docs/REMINDERS.md`
+- [ ] No snooze, no recurrence, and no "remind me 10 minutes before" derived
+      from an event's start yet
+
 ## 5. Micro-interactions (transitions.dev tokens)
 - [x] Motion token scale in `globals.css`; no component hardcodes a duration
 - [x] `checkbox-check` installed verbatim - box fills, tick stroke-draws
