@@ -80,7 +80,12 @@ export default function DashboardLayout({
           </div>
         </SidebarInset>
 
-        <AssistantSlot />
+        {/* The dock's `useChat` mints a random chat id on first render, so it
+            must stream rather than prerender. No fallback: it is a fixed
+            overlay, and a placeholder for it would just be a floating slab. */}
+        <Suspense fallback={null}>
+          <AssistantSlot />
+        </Suspense>
         {/* Registers the service worker and nudges the dispatcher while open. */}
         <ReminderSync />
       </SettingsDialogProvider>

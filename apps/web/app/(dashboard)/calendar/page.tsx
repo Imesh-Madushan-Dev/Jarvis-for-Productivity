@@ -38,7 +38,15 @@ const ROW_LIMIT: Record<CalendarView, number> = {
   month: 500,
 };
 
-async function CalendarBody({ view }: { view: CalendarView }) {
+async function CalendarBody({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  // Read inside the boundary: awaiting searchParams in the page body would
+  // make the whole route unprerenderable.
+  const view = toCalendarView((await searchParams).view);
+
   const user = await requireUser();
   const profile = await getProfile(user.id);
   const timeZone = profile.timezone;
@@ -114,14 +122,11 @@ async function NewEventButton() {
   return <QuickCreateDialog kind="event" day={todayInZone(profile.timezone)} />;
 }
 
-export default async function CalendarPage({
+export default function CalendarPage({
   searchParams,
 }: {
   searchParams: Promise<{ view?: string }>;
 }) {
-  const { view } = await searchParams;
-  const active = toCalendarView(view);
-
   return (
     <PageShell
       title="Calendar"
@@ -131,10 +136,9 @@ export default async function CalendarPage({
         </Suspense>
       }
     >
-      {/* Keyed on the view so switching shows the skeleton instead of holding
-          the previous grid on screen while the new range loads. */}
+      {/* No key: reusing the boundary keeps the current grid on screen while
+          the next view loads, instead of flashing a skeleton. */}
       <Suspense
-        key={active}
         fallback={
           <div className="rounded-2xl border border-border bg-card p-5">
             <Skeleton className="h-6 w-40 rounded" />
@@ -142,7 +146,7 @@ export default async function CalendarPage({
           </div>
         }
       >
-        <CalendarBody view={active} />
+        <CalendarBody searchParams={searchParams} />
       </Suspense>
     </PageShell>
   );

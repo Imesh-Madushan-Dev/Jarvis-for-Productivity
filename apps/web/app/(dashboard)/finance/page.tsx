@@ -15,7 +15,17 @@ import { getProfile } from "@/modules/profile/queries";
 
 export const metadata = { title: "Money" };
 
-async function FinanceBody({ month }: { month?: string }) {
+async function FinanceBody({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
+  // The month lives in the URL so the server knows the query window before it
+  // renders - and a month is bookmarkable. Read inside the boundary: awaiting
+  // it in the page body would make the whole route unprerenderable.
+  const { month: raw } = await searchParams;
+  const month = monthSchema.safeParse(raw).success ? raw : undefined;
+
   const user = await requireUser();
   const profile = await getProfile(user.id);
   // "This month" is resolved from the profile's timezone, not the server's
@@ -43,16 +53,11 @@ async function FinanceBody({ month }: { month?: string }) {
   );
 }
 
-export default async function FinancePage({
+export default function FinancePage({
   searchParams,
 }: {
   searchParams: Promise<{ month?: string }>;
 }) {
-  const { month } = await searchParams;
-  // The month lives in the URL so the server knows the query window before it
-  // renders — and a month is bookmarkable.
-  const active = monthSchema.safeParse(month).success ? month : undefined;
-
   return (
     <PageShell
       title="Money"
@@ -71,7 +76,7 @@ export default async function FinancePage({
           </div>
         }
       >
-        <FinanceBody month={active} />
+        <FinanceBody searchParams={searchParams} />
       </Suspense>
     </PageShell>
   );
