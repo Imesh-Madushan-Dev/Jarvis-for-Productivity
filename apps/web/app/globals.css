@@ -139,6 +139,11 @@
   html {
     @apply font-sans;
     -webkit-tap-highlight-color: transparent;
+    /* The scroll container is the viewport, so the guard has to sit here as
+       well as on body - a clip on body alone propagates and is ignored.
+       `clip` rather than `hidden`: hidden would make this a scroll container
+       and the fixed assistant dock would ride the page. */
+    overflow-x: clip;
   }
 
   body {

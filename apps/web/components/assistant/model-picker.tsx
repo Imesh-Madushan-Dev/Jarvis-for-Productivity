@@ -41,7 +41,7 @@ export function ModelPicker({
             aria-label="Choose model"
             className="t-press inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
           >
-            <span className="max-w-24 truncate">
+            <span className="max-w-16 truncate sm:max-w-24">
               {selected?.label ?? "No model"}
             </span>
             <HugeiconsIcon icon={ArrowDown01Icon} className="size-3.5" />

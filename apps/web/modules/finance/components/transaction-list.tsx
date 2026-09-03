@@ -90,7 +90,7 @@ export function TransactionList({
 
               {/* Reserved width, so revealing the actions never reflows the
                   amounts column. */}
-              <div className="flex w-14 shrink-0 justify-end gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+              <div className="flex w-14 shrink-0 justify-end gap-0.5 transition-opacity sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
                 <button
                   type="button"
                   onClick={() => setEditing(row)}

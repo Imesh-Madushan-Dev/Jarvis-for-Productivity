@@ -62,7 +62,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         figtreeHeading.variable,
       )}
     >
-      <body className="flex min-h-full flex-col">
+      {/* overflow-x-clip, not hidden: clipping keeps the page from
+            scrolling sideways when a child overruns, without turning the body
+            into a scroll container (which would break the fixed dock). */}
+      <body className="flex min-h-full flex-col overflow-x-clip">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

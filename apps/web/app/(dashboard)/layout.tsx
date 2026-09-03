@@ -68,7 +68,7 @@ export default function DashboardLayout({
           <SidebarSlot />
         </Suspense>
 
-        <SidebarInset className="min-w-0">
+        <SidebarInset className="min-w-0 overflow-x-clip">
 
 
           {/* The single place page gutters are set - pages bring no px of their

@@ -249,13 +249,16 @@ export function AssistantBar({
     {},
   );
   const [queued, setQueued] = useState<string | null>(null);
+  // Below `sm` the history sidebar is an overlay, so it needs its own open
+  // state; from `sm` up it is always there and this is ignored.
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // The thread id is minted on the client and travels with every request, so
   // the server never has to guess which conversation a run belongs to.
+  // Minted lazily on first send: generating during render makes the value
+  // unstable for the prerender.
   const threadId = useRef<string>("");
-  if (!threadId.current && typeof crypto !== "undefined") {
-    threadId.current = crypto.randomUUID();
-  }
+  const getThreadId = () => (threadId.current ||= crypto.randomUUID());
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -279,7 +282,7 @@ export function AssistantBar({
       api: "/api/chat",
       // A function, so the model and the page the user is on are read at send
       // time rather than frozen when the transport was constructed.
-      body: () => ({ modelId, pathname, threadId: threadId.current }),
+      body: () => ({ modelId, pathname, threadId: getThreadId() }),
     }),
     // An error must never land inside a collapsed card.
     onError: () => setOpen(true),
@@ -383,7 +386,8 @@ export function AssistantBar({
   }, [full, threads, loadThreads]);
 
   function newChat() {
-    threadId.current = crypto.randomUUID();
+    setHistoryOpen(false);
+    threadId.current = "";
     setMessages([]);
     setDurations({});
     setReasoningOpen({});
@@ -396,6 +400,7 @@ export function AssistantBar({
     try {
       const history = await fetchThread(id);
       threadId.current = id;
+      setHistoryOpen(false);
       setMessages(history);
       setDurations({});
       setReasoningOpen({});
@@ -442,16 +447,30 @@ export function AssistantBar({
             full ? "h-[calc(100dvh-2rem)] max-w-6xl" : "h-auto max-w-2xl",
           )}
         >
-          <div className="flex h-full overflow-hidden rounded-3xl border border-border bg-card">
+          <div className="relative flex h-full overflow-hidden rounded-3xl border border-border bg-card">
             {full ? (
-              <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-muted/30 sm:flex">
+              <aside
+                className={cn(
+                  "absolute inset-0 z-10 w-full flex-col border-r border-border bg-muted/30",
+                  "sm:static sm:z-auto sm:flex sm:w-60 sm:shrink-0",
+                  historyOpen ? "flex" : "hidden",
+                )}
+              >
                 <header className="flex items-center justify-between px-3 py-2.5">
                   <p className="text-sm font-medium">Chat history</p>
-                  <IconButton
-                    icon={PencilEdit01Icon}
-                    label="New chat"
-                    onClick={newChat}
-                  />
+                  <div className="flex items-center gap-0.5">
+                    <IconButton
+                      icon={PencilEdit01Icon}
+                      label="New chat"
+                      onClick={newChat}
+                    />
+                    <IconButton
+                      icon={Cancel01Icon}
+                      label="Close history"
+                      onClick={() => setHistoryOpen(false)}
+                      className="sm:hidden"
+                    />
+                  </div>
                 </header>
 
                 <div className="flex-1 overflow-y-auto px-2 pb-3">
@@ -486,7 +505,7 @@ export function AssistantBar({
                             type="button"
                             onClick={() => void removeThread(thread.id)}
                             aria-label={`Delete ${thread.title || "chat"}`}
-                            className="t-press rounded-md p-1 text-muted-foreground opacity-0 hover:text-destructive group-focus-within/thread:opacity-100 group-hover/thread:opacity-100"
+                            className="t-press rounded-md p-1 text-muted-foreground hover:text-destructive sm:opacity-0 sm:group-focus-within/thread:opacity-100 sm:group-hover/thread:opacity-100"
                           >
                             <HugeiconsIcon
                               icon={Delete02Icon}
@@ -511,7 +530,10 @@ export function AssistantBar({
                     <IconButton
                       icon={Clock01Icon}
                       label="Conversation history"
-                      onClick={() => setFull(true)}
+                      onClick={() => {
+                        setFull(true);
+                        setHistoryOpen(true);
+                      }}
                     />
                     <div className="flex items-center gap-0.5">
                       <IconButton
@@ -612,6 +634,7 @@ export function AssistantBar({
                     onClick={() => {
                       setOpen(true);
                       setFull(true);
+                      setHistoryOpen(true);
                     }}
                   />
                   <Chip
@@ -685,6 +708,7 @@ export function AssistantBar({
                     icon={Attachment01Icon}
                     label="Attachments - not built yet"
                     disabled
+                    className="hidden sm:grid"
                   />
 
                   {busy ? (

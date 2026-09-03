@@ -14,7 +14,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { setWalletBalance } from "../actions";
 import { formatMoney } from "../schema";
 
@@ -57,7 +56,7 @@ export function BalanceCard({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
           Wallet balance
@@ -72,12 +71,7 @@ export function BalanceCard({
         </button>
       </div>
 
-      <p
-        className={cn(
-          "mt-2 text-3xl font-semibold tracking-tight tabular-nums",
-          shown < 0 && "text-rose-600 dark:text-rose-400",
-        )}
-      >
+      <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl">
         {shown < 0 ? "−" : ""}
         {formatMoney(Math.abs(shown), currency)}
       </p>

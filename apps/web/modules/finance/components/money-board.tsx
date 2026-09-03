@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   createTransaction,
   deleteTransaction,
@@ -150,6 +149,7 @@ export function MoneyBoard({
               variant="ghost"
               size="sm"
               className="t-press"
+              nativeButton={false}
               render={
                 <Link
                   href={`/finance?month=${shiftMonth(month, delta)}`}
@@ -171,13 +171,11 @@ export function MoneyBoard({
       <div className="grid gap-3 sm:grid-cols-3">
         <StatCard
           label="Income"
-          tone="in"
           value={formatMoney(income, currency)}
           hint="This month"
         />
         <StatCard
           label="Spent"
-          tone="out"
           value={formatMoney(expense, currency)}
           hint={
             income > 0
@@ -195,7 +193,7 @@ export function MoneyBoard({
       ) : null}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <section className="rounded-2xl border border-border bg-card p-5">
+        <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
           <TransactionList
             transactions={rows}
             categories={categories}
@@ -206,7 +204,7 @@ export function MoneyBoard({
           />
         </section>
 
-        <section className="h-fit rounded-2xl border border-border bg-card p-5">
+        <section className="h-fit rounded-2xl border border-border bg-card p-4 sm:p-5">
           <h2 className="pb-4 text-base font-medium">Where it went</h2>
           <Breakdown
             categories={categories}
@@ -219,32 +217,21 @@ export function MoneyBoard({
   );
 }
 
-/** Surfaces stay neutral; only the number carries the in/out colour. */
 function StatCard({
   label,
   value,
-  tone,
   hint,
 }: {
   label: string;
   value: string;
-  tone: "in" | "out";
   hint?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
       <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
         {label}
       </p>
-      <p
-        className={cn(
-          "mt-2 text-3xl font-semibold tracking-tight tabular-nums",
-          tone === "in"
-            ? "text-emerald-600 dark:text-emerald-400"
-            : "text-rose-600 dark:text-rose-400",
-        )}
-      >
-        {tone === "in" ? "+" : "−"}
+      <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl">
         {value}
       </p>
       {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
@@ -282,12 +269,19 @@ function Breakdown({
   return (
     <ul className="flex flex-col gap-3">
       {items.map(({ category, total }) => (
-        <li key={category.id} className="flex items-center gap-3">
-          <span aria-hidden="true" className="w-5 shrink-0 text-center text-sm">
-            {category.icon || "•"}
-          </span>
-          <span className="w-24 shrink-0 truncate text-sm">{category.name}</span>
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+        <li key={category.id} className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2">
+            <span aria-hidden="true" className="w-5 shrink-0 text-center text-sm">
+              {category.icon || "•"}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-sm">
+              {category.name}
+            </span>
+            <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
+              {formatMoney(total, currency)}
+            </span>
+          </div>
+          <div className="ml-7 h-2 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full transition-[width] duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{
@@ -296,9 +290,6 @@ function Breakdown({
               }}
             />
           </div>
-          <span className="w-24 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
-            {formatMoney(total, currency)}
-          </span>
         </li>
       ))}
     </ul>
