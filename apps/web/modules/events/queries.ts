@@ -15,7 +15,7 @@ export async function listEventsForRange(
 ): Promise<EventListItem[]> {
   "use cache: private";
   cacheTag(`events:${userId}`);
-  cacheLife({ stale: 60 });
+  cacheLife({ stale: 300 }); // >= 300 puts the panel in the App Shell
 
   const supabase = await createClient();
   const { data, error } = await supabase

@@ -5,14 +5,17 @@ import { invalidate } from "@/lib/cache";
 import { requireUser } from "@/lib/auth";
 import { fail, ok, toUserMessage, type ActionResult } from "@/lib/result";
 import { createClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/database.types";
 import {
   createTaskSchema,
   deleteTaskSchema,
   setTaskReminderSchema,
   setTaskStatusSchema,
+  updateTaskSchema,
   type CreateTaskInput,
   type SetTaskReminderInput,
   type SetTaskStatusInput,
+  type UpdateTaskInput,
 } from "./schema";
 
 export async function createTask(
@@ -31,6 +34,7 @@ export async function createTask(
     .insert({
       user_id: user.id,
       title: parsed.data.title,
+      body: parsed.data.body ?? "",
       planned_date: parsed.data.plannedDate ?? null,
       planned_minutes: parsed.data.plannedMinutes ?? null,
       project_id: parsed.data.projectId ?? null,
@@ -46,6 +50,44 @@ export async function createTask(
 
   invalidate(`tasks:${user.id}`);
   return ok(data);
+}
+
+/**
+ * The edit dialog's write. Only the keys present in `input` are sent, so
+ * leaving a field out never blanks it — `null` is the way to clear one.
+ * Reuses setTaskReminder's rule: a moved reminder is a new alarm, so
+ * `reminded_at` is reset whenever `remind_at` is touched.
+ */
+export async function updateTask(input: UpdateTaskInput): Promise<ActionResult> {
+  const parsed = updateTaskSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail(parsed.error.issues[0]?.message ?? "That task isn't valid.");
+  }
+
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const { id, title, body, plannedDate, remindAt } = parsed.data;
+  const patch: Database["public"]["Tables"]["tasks"]["Update"] = {};
+  if (title !== undefined) patch.title = title;
+  if (body !== undefined) patch.body = body ?? "";
+  if (plannedDate !== undefined) patch.planned_date = plannedDate;
+  if (remindAt !== undefined) {
+    patch.remind_at = remindAt;
+    patch.reminded_at = null;
+  }
+  if (Object.keys(patch).length === 0) return ok();
+
+  const { error } = await supabase
+    .from("tasks")
+    .update(patch)
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return fail(toUserMessage(error));
+
+  invalidate(`tasks:${user.id}`);
+  return ok();
 }
 
 export async function setTaskStatus(

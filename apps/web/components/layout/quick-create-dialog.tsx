@@ -80,6 +80,7 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
         kind === "task"
           ? await createTask({
               title,
+              body: String(form.get("body") ?? ""),
               plannedDate: day,
               // The picker yields a local wall-clock string with no offset;
               // the browser's zone is the right one to resolve it in, because
@@ -138,6 +139,16 @@ export function QuickCreateDialog({ kind, day }: { kind: Kind; day: string }) {
               aria-label="Title"
               defaultValue={draft.title ?? ""}
             />
+
+            {kind === "task" ? (
+              <Textarea
+                name="body"
+                rows={4}
+                placeholder="Add a description…"
+                aria-label="Description"
+                defaultValue={draft.body ?? ""}
+              />
+            ) : null}
 
             {kind === "task" ? (
               <div className="flex flex-col gap-1 text-xs text-muted-foreground">

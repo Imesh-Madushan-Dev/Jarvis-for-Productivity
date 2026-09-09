@@ -14,6 +14,7 @@ import {
   rangeForDays,
   todayInZone,
   weekDays,
+  toLocalInput,
   zonedHours,
 } from "./day";
 
@@ -74,5 +75,16 @@ assert.equal(
   "Aug 31 – Sep 6",
   "a week spanning two months names both",
 );
+
+// --- reminder round trip ---------------------------------------------------
+// The edit dialog reads with toLocalInput and writes back with
+// `new Date(value).toISOString()`. Opening a task and saving it untouched must
+// not shift the alarm, in any zone the checker happens to run in.
+assert.equal(toLocalInput(null), "", "no reminder stays no reminder");
+
+const alarm = "2026-08-30T19:00:00.000Z";
+const typed = toLocalInput(alarm);
+assert.match(typed, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+assert.equal(new Date(typed).toISOString(), alarm, "round trip is lossless");
 
 console.log("day.ts calendar math: all checks passed");

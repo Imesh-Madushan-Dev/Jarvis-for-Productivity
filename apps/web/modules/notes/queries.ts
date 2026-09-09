@@ -10,7 +10,7 @@ export async function listRecentNotes(
 ): Promise<NoteListItem[]> {
   "use cache: private";
   cacheTag(`notes:${userId}`);
-  cacheLife({ stale: 60 });
+  cacheLife({ stale: 300 }); // >= 300 puts the panel in the App Shell
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -28,7 +28,7 @@ export async function listRecentNotes(
 export async function getScratchPad(userId: string): Promise<string> {
   "use cache: private";
   cacheTag(`scratchpad:${userId}`);
-  cacheLife({ stale: 60 });
+  cacheLife({ stale: 300 }); // >= 300 puts the panel in the App Shell
 
   const supabase = await createClient();
   const { data, error } = await supabase

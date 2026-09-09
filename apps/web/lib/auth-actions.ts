@@ -1,5 +1,6 @@
 "use server";
 
+import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
@@ -10,6 +11,9 @@ import { fail, ok, type ActionResult } from "@/lib/result";
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  // The session lives in a browser-memory private cache; drop it so the next
+  // account does not inherit the last one's name and avatar.
+  updateTag("session");
   redirect("/login");
 }
 

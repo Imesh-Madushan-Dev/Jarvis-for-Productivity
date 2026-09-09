@@ -10,7 +10,7 @@ export async function listJournalEntries(
 ): Promise<JournalEntry[]> {
   "use cache: private";
   cacheTag(`journal:${userId}`);
-  cacheLife({ stale: 60 });
+  cacheLife({ stale: 300 }); // >= 300 puts the panel in the App Shell
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -66,7 +66,7 @@ export async function lastJournalEntry(
 ): Promise<JournalEntry | null> {
   "use cache: private";
   cacheTag(`journal:${userId}`);
-  cacheLife({ stale: 60 });
+  cacheLife({ stale: 300 }); // >= 300 puts the panel in the App Shell
 
   const supabase = await createClient();
   const { data } = await supabase

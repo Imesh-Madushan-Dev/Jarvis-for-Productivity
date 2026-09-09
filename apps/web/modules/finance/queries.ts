@@ -35,7 +35,7 @@ export async function listTransactions(
 ): Promise<TransactionListItem[]> {
   "use cache: private";
   cacheTag(`transactions:${userId}`);
-  cacheLife({ stale: 60 });
+  cacheLife({ stale: 300 }); // >= 300 puts the panel in the App Shell
 
   const { from, to } = monthBounds(month);
   const supabase = await createClient();
@@ -61,7 +61,7 @@ export async function getWalletBalance(userId: string): Promise<number> {
   "use cache: private";
   cacheTag(`transactions:${userId}`);
   cacheTag(`profile:${userId}`);
-  cacheLife({ stale: 60 });
+  cacheLife({ stale: 300 }); // >= 300 puts the panel in the App Shell
 
   const supabase = await createClient();
   const [{ data: profile }, { data: net }] = await Promise.all([

@@ -1,6 +1,6 @@
 import { cache } from "react";
+import { cacheLife, cacheTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { connection } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,23 +16,33 @@ export type SessionUser = { id: string; email: string | null };
  * when it does not — so this is never slower and is much faster once JWT
  * signing keys are enabled in the dashboard.
  *
- * connection() marks the scope request-time. Without it the prerenderer trips
- * over the Date.now() that supabase-js uses internally to check token expiry -
- * and since every panel funnels through here, one call covers the whole tree.
- * Safe because this is never called from inside a `use cache` scope, where
- * connection() is prohibited.
- *
- * Wrapped in React cache(): every Suspense panel on the dashboard calls this,
- * and without dedupe each one would repeat the work.
+ * `use cache: private` rather than connection(): every panel on the dashboard
+ * awaits this first, so a request-time scope here held the entire tree out of
+ * the App Shell — meaning every soft navigation re-streamed every panel and
+ * the app flashed skeletons instead of feeling like an app. A private cache is
+ * browser-memory only and keyed to the session, and it is skipped during
+ * static shell generation, so the Date.now() supabase-js uses to check token
+ * expiry never reaches the prerenderer either. `stale` must be >= 300 for the
+ * result to be included in the App Shell.
  */
-export const requireUser = cache(async (): Promise<SessionUser> => {
-  await connection();
+async function readSession(): Promise<SessionUser | null> {
+  "use cache: private";
+  cacheTag("session");
+  cacheLife({ stale: 300 });
 
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
 
   const id = data?.claims.sub;
-  if (!id) redirect("/login");
+  return id ? { id, email: data?.claims.email ?? null } : null;
+}
 
-  return { id, email: data?.claims.email ?? null };
+/**
+ * Wrapped in React cache(): the redirect has to live outside the cached scope,
+ * and this dedupes the wrapper across the dozen panels that call it.
+ */
+export const requireUser = cache(async (): Promise<SessionUser> => {
+  const user = await readSession();
+  if (!user) redirect("/login");
+  return user;
 });

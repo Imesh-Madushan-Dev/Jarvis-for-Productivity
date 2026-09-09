@@ -89,6 +89,21 @@ export function anchor(day: string): Date {
   return new Date(year, month - 1, date, 12);
 }
 
+/**
+ * An instant as the local wall-clock `YYYY-MM-DDTHH:mm` the DateTimeField
+ * speaks — the mirror of the `new Date(value).toISOString()` its callers do on
+ * the way out, so a reminder survives a round trip through an edit dialog
+ * unchanged. Browser-local on purpose: that is the clock the user reads while
+ * typing, and it is the same zone the create path resolves against.
+ */
+export function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 16);
+}
+
 export function toDay(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const dayOfMonth = String(date.getDate()).padStart(2, "0");

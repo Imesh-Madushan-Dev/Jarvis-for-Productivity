@@ -19,7 +19,7 @@ export async function listTasksForDay(
 ): Promise<TaskListItem[]> {
   "use cache: private";
   cacheTag(`tasks:${userId}`);
-  cacheLife({ stale: 60 });
+  cacheLife({ stale: 300 }); // >= 300 puts the panel in the App Shell
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -41,7 +41,7 @@ export async function listAllTasks(
 ): Promise<TaskListItem[]> {
   "use cache: private";
   cacheTag(`tasks:${userId}`);
-  cacheLife({ stale: 60 });
+  cacheLife({ stale: 300 }); // >= 300 puts the panel in the App Shell
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -68,7 +68,7 @@ export async function listRemindersForRange(
 ): Promise<TaskListItem[]> {
   "use cache: private";
   cacheTag(`tasks:${userId}`);
-  cacheLife({ stale: 60 });
+  cacheLife({ stale: 300 }); // >= 300 puts the panel in the App Shell
 
   const supabase = await createClient();
   const { data, error } = await supabase

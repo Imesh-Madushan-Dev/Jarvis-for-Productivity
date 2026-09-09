@@ -7,9 +7,10 @@ import { AlarmClockIcon } from "@hugeicons/core-free-icons";
 
 import { formatTimeInZone } from "@/lib/day";
 import { cn } from "@/lib/utils";
-import { setTaskStatus } from "../actions";
+import { deleteTask, setTaskStatus, updateTask } from "../actions";
 import type { TaskListItem, TaskStatus } from "../schema";
 import { AddTaskInline } from "./add-task-inline";
+import { EditTaskDialog, type TaskEdit } from "./task-dialog";
 import { TaskCheckbox } from "./task-checkbox";
 
 export function TaskList({
@@ -23,6 +24,9 @@ export function TaskList({
   timeZone: string;
 }) {
   const [error, setError] = useState<string | null>(null);
+  // The row being edited. Held by id rather than by value so the dialog always
+  // reads the current optimistic row, not a copy taken when it opened.
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const [optimisticTasks, patchTask] = useOptimistic(
@@ -31,14 +35,35 @@ export function TaskList({
       current: TaskListItem[],
       next:
         | { kind: "status"; id: string; status: TaskStatus }
+        | { kind: "edit"; id: string; values: TaskEdit }
+        | { kind: "remove"; id: string }
         | { kind: "add"; task: TaskListItem },
-    ) =>
-      next.kind === "add"
-        ? [...current, next.task]
-        : current.map((task) =>
+    ) => {
+      switch (next.kind) {
+        case "add":
+          return [...current, next.task];
+        case "remove":
+          return current.filter((task) => task.id !== next.id);
+        case "status":
+          return current.map((task) =>
             task.id === next.id ? { ...task, status: next.status } : task,
-          ),
+          );
+        case "edit":
+          return current.map((task) =>
+            task.id === next.id
+              ? {
+                  ...task,
+                  title: next.values.title,
+                  body: next.values.body,
+                  remind_at: next.values.remindAt,
+                }
+              : task,
+          );
+      }
+    },
   );
+
+  const editing = optimisticTasks.find((task) => task.id === editingId) ?? null;
 
   function toggle(task: TaskListItem) {
     const status: TaskStatus = task.status === "done" ? "todo" : "done";
@@ -48,6 +73,27 @@ export function TaskList({
       const result = await setTaskStatus({ id: task.id, status });
       // On failure React drops the optimistic value when the transition
       // settles, so the row reverts itself. We only have to explain why.
+      setError(result.ok ? null : result.error);
+    });
+  }
+
+  function save(id: string, values: TaskEdit) {
+    startTransition(async () => {
+      patchTask({ kind: "edit", id, values });
+      const result = await updateTask({
+        id,
+        title: values.title,
+        body: values.body,
+        remindAt: values.remindAt,
+      });
+      setError(result.ok ? null : result.error);
+    });
+  }
+
+  function remove(id: string) {
+    startTransition(async () => {
+      patchTask({ kind: "remove", id });
+      const result = await deleteTask({ id });
       setError(result.ok ? null : result.error);
     });
   }
@@ -73,7 +119,14 @@ export function TaskList({
                   label={done ? `Reopen ${task.title}` : `Complete ${task.title}`}
                   className="mt-0.5"
                 />
-                <div className="min-w-0 flex-1">
+                {/* The row itself opens the editor - a separate pencil would be
+                    one more 24px target on a phone for the same job. */}
+                <button
+                  type="button"
+                  onClick={() => setEditingId(task.id)}
+                  aria-label={`Edit ${task.title}`}
+                  className="min-w-0 flex-1 cursor-pointer text-left"
+                >
                   <p
                     className={cn(
                       "truncate text-sm transition-colors duration-250 ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -84,6 +137,11 @@ export function TaskList({
                   >
                     {task.title}
                   </p>
+                  {task.body ? (
+                    <p className="mt-0.5 line-clamp-2 text-xs whitespace-pre-line text-muted-foreground">
+                      {task.body}
+                    </p>
+                  ) : null}
                   {task.remind_at ? (
                     <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                       <HugeiconsIcon icon={AlarmClockIcon} className="size-3.5" />
@@ -98,7 +156,7 @@ export function TaskList({
                       </span>
                     </p>
                   ) : null}
-                </div>
+                </button>
               </li>
             );
           })}
@@ -115,6 +173,7 @@ export function TaskList({
               // Only a React key until the server's row arrives.
               id: `pending-${crypto.randomUUID()}`,
               title,
+              body: "",
               status: "todo",
               planned_date: day,
               planned_minutes: null,
@@ -126,6 +185,13 @@ export function TaskList({
             },
           })
         }
+      />
+
+      <EditTaskDialog
+        task={editing}
+        onClose={() => setEditingId(null)}
+        onSubmit={(values) => editing && save(editing.id, values)}
+        onDelete={() => editing && remove(editing.id)}
       />
 
       {error ? (

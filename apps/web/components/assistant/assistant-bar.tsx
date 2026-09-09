@@ -81,7 +81,7 @@ function IconButton({
             disabled={disabled}
             aria-label={label}
             className={cn(
-              "t-press grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground",
+              "t-press grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground sm:size-7",
               "hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-40",
               "focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
               className,
@@ -112,7 +112,7 @@ function Chip({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="t-press inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-40"
+      className="t-press inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-xs text-muted-foreground sm:h-auto sm:px-2 sm:py-1 hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-40"
     >
       <HugeiconsIcon icon={icon} className="size-3.5" />
       {children}
@@ -432,8 +432,8 @@ export function AssistantBar({
 
       <div
         className={cn(
-          "pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]",
-          full && "top-0 items-center pb-4",
+          "pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]",
+          full && "top-0 items-stretch p-0 sm:items-center sm:p-4",
         )}
       >
         {/* The ring lives on the outer element and paints at inset -2px, so
@@ -444,14 +444,22 @@ export function AssistantBar({
           className={cn(
             "rainbow-edge pointer-events-auto w-full rounded-3xl shadow-lg",
             "transition-[max-width,height] duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]",
-            full ? "h-[calc(100dvh-2rem)] max-w-6xl" : "h-auto max-w-2xl",
+            full
+              ? "h-dvh max-w-none rounded-none sm:h-[calc(100dvh-2rem)] sm:max-w-6xl sm:rounded-3xl"
+              : "h-auto max-w-2xl",
           )}
         >
-          <div className="relative flex h-full overflow-hidden rounded-3xl border border-border bg-card">
+          <div
+            className={cn(
+              "relative flex h-full overflow-hidden rounded-3xl border border-border bg-card",
+              full && "rounded-none border-x-0 sm:rounded-3xl sm:border-x",
+            )}
+          >
             {full ? (
               <aside
                 className={cn(
                   "absolute inset-0 z-10 w-full flex-col border-r border-border bg-muted/30",
+                  "pt-[env(safe-area-inset-top)] sm:pt-0",
                   "sm:static sm:z-auto sm:flex sm:w-60 sm:shrink-0",
                   historyOpen ? "flex" : "hidden",
                 )}
@@ -526,7 +534,12 @@ export function AssistantBar({
                 style={{ gridTemplateRows: cardOpen || full ? "1fr" : "0fr" }}
               >
                 <div className="flex min-h-0 flex-col overflow-hidden">
-                  <header className="flex items-center justify-between px-3 py-2">
+                  <header
+                    className={cn(
+                      "flex items-center justify-between px-3 py-2",
+                      full && "pt-[calc(0.5rem+env(safe-area-inset-top))] sm:pt-2",
+                    )}
+                  >
                     <IconButton
                       icon={Clock01Icon}
                       label="Conversation history"
@@ -564,7 +577,7 @@ export function AssistantBar({
                       "transition-[max-height] duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]",
                       full
                         ? "mx-auto w-full max-w-3xl flex-1 max-h-none"
-                        : "max-h-[40vh]",
+                        : "max-h-[45dvh]",
                     )}
                   >
                     {messages.map((message) =>
@@ -626,8 +639,14 @@ export function AssistantBar({
                 </div>
               </div>
 
-              <div className={cn("w-full p-2", full && "mx-auto max-w-3xl")}>
-                <div className="flex items-center gap-0.5 overflow-x-auto px-1 pb-1.5">
+              <div
+                className={cn(
+                  "w-full p-2",
+                  full &&
+                    "mx-auto max-w-3xl pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:pb-2",
+                )}
+              >
+                <div className="flex items-center gap-0.5 overflow-x-auto px-1 pb-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <IconButton
                     icon={Clock01Icon}
                     label="Conversation history"
@@ -693,7 +712,7 @@ export function AssistantBar({
                     }
                     disabled={noModel}
                     aria-label="Message Moly"
-                    className="min-w-0 flex-1 bg-transparent py-1 text-sm placeholder:text-muted-foreground focus:outline-none disabled:opacity-60"
+                    className="min-w-0 flex-1 bg-transparent py-1 text-base placeholder:text-muted-foreground focus:outline-none disabled:opacity-60 sm:text-sm"
                   />
 
                   <ModelPicker
